@@ -1,0 +1,25 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "function-paren-newline": ["error", { "minItems": 6 }],
+    "no-underscore-dangle": ["error", { "allow": ["_id"] }],
+    "linebreak-style": 0,
+    "indent": ["error", 2]
+  },
+  "globals": {
+    "window": true,
+    "document": true,
+    "GLOBAL": true,
+    "before": true,
+    "it": true,
+    "xit": true,
+    "expect": true,
+    "describe": true,
+    "jest": true,
+    "require": true,
+    "module": true,
+    "Promise": true,
+    "beforeAll": true,
+    "beforeEach": true
+  }
+}
