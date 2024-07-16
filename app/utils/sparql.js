@@ -13,6 +13,7 @@ export async function generateRandomLexemeQuery ({ exclude = '' }) {
   // generate get random lexeme query
   const query = `SELECT ?lexemeLabel ?lemma ?senseLabel ?categoryLabel ?gloss ?categoryQID WHERE {
     ?lexeme dct:language wd:${Constant.LANGUAGE.ID.CODE};
+      wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
       wikibase:lemma ?lemma;
       ontolex:sense ?sense.
@@ -39,6 +40,7 @@ export async function generateGetLexemeQuery ({ include = '' }) {
   // generate get random lexeme query
   const query = `SELECT ?lexemeLabel ?lemma ?senseLabel ?categoryLabel ?gloss ?categoryQID WHERE {
     ?lexeme dct:language wd:${Constant.LANGUAGE.ID.CODE};
+      wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
       wikibase:lemma ?lemma;
       ontolex:sense ?sense.
