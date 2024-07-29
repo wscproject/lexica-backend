@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'lexica',
     script: './build/bin/www.js',
-    instances: 'max',
+    instances: '1',
     exec_mode: 'cluster',
     autorestart: true,
     watch: false,

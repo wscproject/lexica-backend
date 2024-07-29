@@ -17,6 +17,7 @@ app.use(Express.json());
 // app.use(BodyParser.urlencoded({ extended: false }));
 app.use(CookieParser());
 app.use(Express.static(Path.join(__dirname, 'public')));
+app.use(Express.static('dist'));
 app.use(Cors());
 app.use(MethodOverride('X-HTTP-Method-Override'));
 app.use(Morgan('dev'));
