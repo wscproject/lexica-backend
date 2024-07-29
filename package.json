@@ -12,11 +12,10 @@
     "frontend:copy": "cp -r ../lexica-frontend/dist/* dist/",
     "pm2-prod": "pm2 start ecosystem.config.js",
     "build": "npm run build-server && npm run pm2-prod",
-    "build:full": "npm run frontend:install && npm run frontend:build && npm run frontend:copy && npm run build", 
+    "build:full": "npm run frontend:install && npm run frontend:build && npm run frontend:copy && npm run build",
     "vercel-build": "echo vercel-deployed"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.374.0",
     "@babel/node": "^7.22.5",
     "axios": "^0.25.0",
     "babel-polyfill": "^6.26.0",
