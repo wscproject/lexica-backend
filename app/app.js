@@ -41,8 +41,9 @@ app.use((err, req, res) => {
 });
 
 app.use((req, res) => {
-  res.header('Access-Control-Allow-Origin',
-    `${Config.nginx.host}:${Config.nginx.port}`);
+  // res.header('Access-Control-Allow-Origin',
+  //   `${Config.nginx.host}:${Config.nginx.port}`);
+  res.header("Access-Control-Allow-Origin", "*");
   res.header('Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Secret, token');
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
