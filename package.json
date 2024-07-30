@@ -9,7 +9,7 @@
     "build-server": "babel -d ./build ./app -s",
     "frontend:install": "cd ../lexica-frontend && npm install",
     "frontend:build": "cd ../lexica-frontend && npm run build",
-    "frontend:copy": "cp -r ../lexica-frontend/dist/* dist/",
+    "frontend:copy": "cp -r ../lexica-frontend/dist/* app/dist/",
     "pm2-prod": "pm2 start ecosystem.config.js",
     "build": "npm run build-server && npm run pm2-prod",
     "build:full": "npm run frontend:install && npm run frontend:build && npm run frontend:copy && npm run build",
