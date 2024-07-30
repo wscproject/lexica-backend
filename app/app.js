@@ -17,12 +17,20 @@ app.use(Express.json());
 // app.use(BodyParser.urlencoded({ extended: false }));
 app.use(CookieParser());
 app.use(Express.static(Path.join(__dirname, 'public')));
-app.use(Express.static('dist'));
 app.use(Cors());
 app.use(MethodOverride('X-HTTP-Method-Override'));
 app.use(Morgan('dev'));
 
 app.use('/api/v1', User);
+
+// Serve the static files from the Vue app
+app.use(Express.static(Path.join(__dirname, 'dist')));
+
+// Handle React routing, return all requests to the Vue app
+app.get('*', (req, res) => {
+  res.sendFile(Path.join(__dirname, 'dist', 'index.html'));
+});
+
 
 // catch 404 and forward to error handler
 app.use((req, res) => {
