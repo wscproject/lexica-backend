@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable consistent-return */
-import { Merchant } from '../../../models';
+import { UserPreference } from '../../../models';
 import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { Get } from '../../../utils/axios';
@@ -43,7 +43,24 @@ export async function validateUser(req, res, next) {
       throw Status.ERROR.TOKEN_INVALID;
     }
 
-    req.loggedInUser = getProfileResponse.query.userinfo;
+    let userPreference = await UserPreference.findOne({
+      where: {
+        userId: getProfileResponse.query.userinfo.id
+      }
+    });
+
+    if (!userPreference) {
+      userPreference = await UserPreference.create(
+        {
+          userId: getProfileResponse.query.userinfo.id,
+          displayLanguage: Constant.DISPLAY_LANGUAGE.ID.ISO,
+          languageId: null,
+          language: null,
+        }
+      );
+    }
+
+    req.loggedInUser = { ...getProfileResponse.query.userinfo, ...userPreference.dataValues };
 
     next();
   } catch (error) {

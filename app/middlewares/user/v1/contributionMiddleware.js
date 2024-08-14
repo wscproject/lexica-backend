@@ -10,7 +10,7 @@ export async function validateUpdateContributionDetail(req, res, next) {
       senseId: Joi.string().required(),
       action: Joi.string().valid(Constant.CONTRIBUTION_DETAIL_ACTION.ADD, Constant.CONTRIBUTION_DETAIL_ACTION.NO_ITEM, Constant.CONTRIBUTION_DETAIL_ACTION.SKIP),
       itemId: Joi.string().when('action', {
-        is: Constant.Constant.CONTRIBUTION_DETAIL_ACTION.ADD,
+        is: Constant.CONTRIBUTION_DETAIL_ACTION.ADD,
         then: Joi.required(),
         otherwise: Joi.string().allow(null, ''),
       })
@@ -26,5 +26,24 @@ export async function validateUpdateContributionDetail(req, res, next) {
     return next();
   } catch (err) {
     return responseError(res, 'joi error', 'validateUpdateContributionDetail');
+  }
+}
+
+export async function validateStartContribution(req, res, next) {
+  try {
+    const schema = {
+      language: Joi.string().required(),
+    };
+    const payloadObject = joiFormErrors({
+      joiSchema: schema,
+      parameters: req.body,
+    });
+    
+    if (payloadObject) {
+      return responseError(res, payloadObject, 'validateStartContribution');
+    }
+    return next();
+  } catch (err) {
+    return responseError(res, 'joi error', 'validateStartContribution');
   }
 }
