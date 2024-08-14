@@ -5,7 +5,6 @@ import { validateToken, validateUser } from '../../../middlewares/user/v1/common
 
 const router = express.Router();
 
-router.get('/profile', validateToken, validateUser, controller.getUserProfile);
 router.post('/access-token', middleware.validateGetAccessToken, controller.accessToken);
 router.post('/refresh-token', middleware.validateRefreshAccessToken, controller.refreshToken);
 

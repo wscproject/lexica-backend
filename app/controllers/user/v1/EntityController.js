@@ -7,6 +7,7 @@ import { searchEntities, getEntityDetail} from '../../../utils/wikidata';
 
 export async function getEntities(req, res) {
   try {
+    const { loggedInUser } = req;
     let { limit, page, search } = req.query;
 
     limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
@@ -15,20 +16,18 @@ export async function getEntities(req, res) {
 
     // search entities
     const entityResponse = [];
-    const entities = await searchEntities({ search, limit, offset });
+    const entities = await searchEntities({ search, limit, offset, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
 
-    if (entities.search) {
+    if (entities.search && entities.search.length > 0) {
+      const entityIds = entities.search.map(entity => entity.id).join('|');
+      const entityDetails = await getEntityDetail({ entityId: entityIds, props: 'claims', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+
       for (const entity of entities.search) {
         const temporaryEntity = {
           id: entity.id,
           label: entity.display.label.value,
           description: entity.display.description ? entity.display.description.value : '',
-          image: null,
-        }
-  
-        const entityDetail = await getEntityDetail({ entityId: entity.id, props: 'claims' });
-        if (entityDetail['entities'][entity.id]['claims'] && entityDetail['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
-          temporaryEntity.image = `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetail['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0]['mainsnak']['datavalue']['value']}`;
+          image: entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE] ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0]['mainsnak']['datavalue']['value']}` : null,
         }
   
         entityResponse.push(temporaryEntity);
@@ -52,21 +51,24 @@ export async function getEntities(req, res) {
 
 export async function getEntity(req, res) {
   try {
+    const { loggedInUser } = req;
     const { entityId } = req.params;
 
     // get entitiy
-    const entity = await getEntityDetail({ entityId, props: 'labels|claims|descriptions' });
+    const entity = await getEntityDetail({ entityId, props: 'labels|claims|descriptions', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
     const entityResponse = {
       id: entityId,
-      label: entity['entities'][entityId]['labels'][Constant.LANGUAGE.ID.ISO] ? entity['entities'][entityId]['labels'][Constant.LANGUAGE.ID.ISO]['value'] : '',
-      description: entity['entities'][entityId]['descriptions'][Constant.LANGUAGE.ID.ISO] ? entity['entities'][entityId]['descriptions'][Constant.LANGUAGE.ID.ISO]['value'] : '',
+      label: entity['entities'][entityId]['labels'][loggedInUser.displayLanguage] ? entity['entities'][entityId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+      description: entity['entities'][entityId]['descriptions'][loggedInUser.displayLanguage] ? entity['entities'][entityId]['descriptions'][loggedInUser.displayLanguage]['value'] : '',
       statements: {
         instanceOf: null,
         subclass: null,
         partOf: null,
         images: null,
-        follows: null,
-        textAudio:null,
+        // follows: null,
+        // textAudio:null,
+        taxonName: null,
+        hasParts: null,
       }
     };
 
@@ -96,11 +98,11 @@ export async function getEntity(req, res) {
       for (const instanceOfData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.INSTANCE_OF]) {
         if (instanceOfData['mainsnak']['datavalue']['value']['id']) {
           const instanceOfId = instanceOfData['mainsnak']['datavalue']['value']['id'];
-          const instanceOfDetail = await getEntityDetail({ entityId: instanceOfId, props: 'labels' });
+          const instanceOfDetail = await getEntityDetail({ entityId: instanceOfId, props: 'labels', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
 
           instanceOf.push({
             id: instanceOfId,
-            value: instanceOfDetail['entities'][instanceOfId]['labels'][Constant.LANGUAGE.ID.ISO] ? instanceOfDetail['entities'][instanceOfId]['labels'][Constant.LANGUAGE.ID.ISO]['value'] : '',
+            value: instanceOfDetail['entities'][instanceOfId]['labels'][loggedInUser.displayLanguage] ? instanceOfDetail['entities'][instanceOfId]['labels'][loggedInUser.displayLanguage]['value'] : '',
           });
         }
       }
@@ -119,11 +121,11 @@ export async function getEntity(req, res) {
       for (const subclassData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.SUBCLASS]) {
         if (subclassData['mainsnak']['datavalue']['value']['id']) {
           const subclassId = subclassData['mainsnak']['datavalue']['value']['id'];
-          const subclassDetail = await getEntityDetail({ entityId: subclassId, props: 'labels' });
+          const subclassDetail = await getEntityDetail({ entityId: subclassId, props: 'labels', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
 
           subclass.push({
             id: subclassId,
-            value: subclassDetail['entities'][subclassId]['labels'][Constant.LANGUAGE.ID.ISO] ? subclassDetail['entities'][subclassId]['labels'][Constant.LANGUAGE.ID.ISO]['value'] : '',
+            value: subclassDetail['entities'][subclassId]['labels'][loggedInUser.displayLanguage] ? subclassDetail['entities'][subclassId]['labels'][loggedInUser.displayLanguage]['value'] : '',
           });
         }
       }
@@ -142,11 +144,11 @@ export async function getEntity(req, res) {
       for (const partOfData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.PART_OF]) {
         if (partOfData['mainsnak']['datavalue']['value']['id']) {
           const partOfId = partOfData['mainsnak']['datavalue']['value']['id'];
-          const partOfDetail = await getEntityDetail({ entityId: partOfId, props: 'labels' });
+          const partOfDetail = await getEntityDetail({ entityId: partOfId, props: 'labels', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
 
           partOf.push({
             id: partOfId,
-            value: partOfDetail['entities'][partOfId]['labels'][Constant.LANGUAGE.ID.ISO] ? partOfDetail['entities'][partOfId]['labels'][Constant.LANGUAGE.ID.ISO]['value'] : '',
+            value: partOfDetail['entities'][partOfId]['labels'][loggedInUser.displayLanguage] ? partOfDetail['entities'][partOfId]['labels'][loggedInUser.displayLanguage]['value'] : '',
           });
         }
       }
@@ -159,48 +161,94 @@ export async function getEntity(req, res) {
       }
     }
 
-    // get follows
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.FOLLOWS]) {
-      const follows = [];
-      for (const followsData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.FOLLOWS]) {
-        if (followsData['mainsnak']['datavalue']['value']['id']) {
-          const followsId = followsData['mainsnak']['datavalue']['value']['id'];
-          const followsDetail = await getEntityDetail({ entityId: followsId, props: 'labels' });
+    // get taxon name
+    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME]) {
+      const taxonName = [];
+      for (const taxonNameData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME]) {
+        if (taxonNameData['mainsnak']['datavalue']['value']['id']) {
+          const taxonNameId = taxonNameData['mainsnak']['datavalue']['value']['id'];
+          const taxonNameDetail = await getEntityDetail({ entityId: taxonNameId, props: 'labels', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
 
-          follows.push({
-            id: followsId,
-            value: followsDetail['entities'][followsId]['labels'][Constant.LANGUAGE.ID.ISO] ? followsDetail['entities'][followsId]['labels'][Constant.LANGUAGE.ID.ISO]['value'] : '',
+          taxonName.push({
+            id: taxonNameId,
+            value: taxonNameDetail['entities'][taxonNameId]['labels'][loggedInUser.displayLanguage] ? taxonNameDetail['entities'][taxonNameId]['labels'][loggedInUser.displayLanguage]['value'] : '',
           });
         }
       }
 
-      if (follows.length > 0) {
-        entityResponse.statements.follows = {
-          property: Constant.WIKIDATA_PROPERTY_CODE.FOLLOWS,
-          data: follows,
+      if (taxonName.length > 0) {
+        entityResponse.statements.taxonName = {
+          property: Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME,
+          data: taxonName,
         };
       }
     }
+
+    // get has parts
+    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS]) {
+      const hasParts = [];
+      for (const hasPartData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS]) {
+        if (hasPartData['mainsnak']['datavalue']['value']['id']) {
+          const hasPartId = hasPartData['mainsnak']['datavalue']['value']['id'];
+          const hasPartDetail = await getEntityDetail({ entityId: hasPartId, props: 'labels', language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+
+          hasParts.push({
+            id: hasPartId,
+            value: hasPartDetail['entities'][hasPartId]['labels'][loggedInUser.displayLanguage] ? hasPartDetail['entities'][hasPartId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+          });
+        }
+      }
+
+      if (hasParts.length > 0) {
+        entityResponse.statements.hasParts = {
+          property: Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS,
+          data: hasParts,
+        };
+      }
+    }
+
+    // get follows
+    // if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.FOLLOWS]) {
+    //   const follows = [];
+    //   for (const followsData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.FOLLOWS]) {
+    //     if (followsData['mainsnak']['datavalue']['value']['id']) {
+    //       const followsId = followsData['mainsnak']['datavalue']['value']['id'];
+    //       const followsDetail = await getEntityDetail({ entityId: followsId, props: 'labels' });
+
+    //       follows.push({
+    //         id: followsId,
+    //         value: followsDetail['entities'][followsId]['labels'][loggedInUser.displayLanguage] ? followsDetail['entities'][followsId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+    //       });
+    //     }
+    //   }
+
+    //   if (follows.length > 0) {
+    //     entityResponse.statements.follows = {
+    //       property: Constant.WIKIDATA_PROPERTY_CODE.FOLLOWS,
+    //       data: follows,
+    //     };
+    //   }
+    // }
 
     // get text audio
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TEXT_AUDIO]) {
-      const textAudio = [];
-      for (const textAudioData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TEXT_AUDIO]) {
-        if (textAudioData['mainsnak']['datavalue']['value']) {
-          textAudio.push({
-            value: textAudioData['mainsnak']['datavalue']['value'],
-            url: `https://commons.wikimedia.org/wiki/Special:FilePath/${textAudioData['mainsnak']['datavalue']['value']}`,
-          });
-        }
-      }
+    // if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TEXT_AUDIO]) {
+    //   const textAudio = [];
+    //   for (const textAudioData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TEXT_AUDIO]) {
+    //     if (textAudioData['mainsnak']['datavalue']['value']) {
+    //       textAudio.push({
+    //         value: textAudioData['mainsnak']['datavalue']['value'],
+    //         url: `https://commons.wikimedia.org/wiki/Special:FilePath/${textAudioData['mainsnak']['datavalue']['value']}`,
+    //       });
+    //     }
+    //   }
 
-      if (textAudio.length > 0) {
-        entityResponse.statements.textAudio = {
-          property: Constant.WIKIDATA_PROPERTY_CODE.TEXT_AUDIO,
-          data: textAudio,
-        };
-      }
-    }
+    //   if (textAudio.length > 0) {
+    //     entityResponse.statements.textAudio = {
+    //       property: Constant.WIKIDATA_PROPERTY_CODE.TEXT_AUDIO,
+    //       data: textAudio,
+    //     };
+    //   }
+    // }
 
     return responseSuccess(res, entityResponse);
   } catch (err) {

@@ -5,8 +5,8 @@ import { validateToken, validateUser } from '../../../middlewares/user/v1/common
 
 const router = express.Router();
 
-router.get('/start', validateToken, validateUser, controller.startContribution);
-router.put('/detail/:senseId', validateToken, validateUser, controller.updateContributionDetail);
+router.post('/start', validateToken, validateUser, controller.startContribution);
+router.put('/detail/:senseId', validateToken, validateUser, middleware.validateUpdateContributionDetail, controller.updateContributionDetail);
 router.post('/end', validateToken, validateUser, controller.endContribution);
 
 export default router;
