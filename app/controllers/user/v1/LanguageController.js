@@ -11,9 +11,8 @@ import {
 // LIST
 export async function getLanguages(req, res) {
   try {
-    let { loggedInUser } = req;
     let { limit, page } = req.query;
-    const { search, lang } = req.query;
+    const { search } = req.query;
 
     limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
     page = page ? Number(page) : Constant.PAGINATION.PAGE;
@@ -24,19 +23,13 @@ export async function getLanguages(req, res) {
       where: {},
       limit,
       offset,
-      order: loggedInUser.displayLanguage && loggedInUser.displayLanguage === Constant.DISPLAY_LANGUAGE.ID.ISO ? [[ 'titleId', 'ASC']] : [[ 'titleEn', 'ASC']]
+      order: [[ 'title', 'ASC']],
     };
 
     if (search) {
-      if (loggedInUser.displayLanguage && loggedInUser.displayLanguage === Constant.DISPLAY_LANGUAGE.ID.ISO) {
-        queryParams.where[Op.or] = [
-          { titleId: { [Op.iLike]: `%${search.trim()}%` } },
-        ];
-      } else {
-        queryParams.where[Op.or] = [
-          { titleEn: { [Op.iLike]: `%${search.trim()}%` } },
-        ];
-      }
+      queryParams.where[Op.or] = [
+        { title: { [Op.iLike]: `%${search.trim()}%` } },
+      ];
     }
 
     const languages = await Language.findAndCountAll(queryParams);
