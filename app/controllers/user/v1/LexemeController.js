@@ -110,6 +110,7 @@ export async function getLexemeSenseDetail(req, res) {
       for (const translateData of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.TRANSLATION]) {
         if (translateData['mainsnak']['datavalue']['value']['id']) {
           const translateValue = [];
+          const translateLanguageCode = [];
           const translateId = translateData['mainsnak']['datavalue']['value']['id'].split('-')[0];
           const translateDetail = await getEntityDetail({ entityId: translateId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
           const translateLanguageId = translateDetail['entities'][translateId]['language'];
@@ -117,11 +118,13 @@ export async function getLexemeSenseDetail(req, res) {
 
           for (const translateLemmaKey in translateDetail['entities'][translateId]['lemmas']) {
             const translateLemma = translateDetail['entities'][translateId]['lemmas'][translateLemmaKey];
-            translateValue.push(`${translateLemma.value} (${translateLemma.language})`);
+            translateValue.push(`${translateLemma.value}`);
+            translateLanguageCode.push(translateLemma.language); 
           }
 
           translate.push({
             language: language['entities'][translateLanguageId]['labels'][loggedInUser.displayLanguage] ? language['entities'][translateLanguageId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+            code: translateLanguageCode.length > 0 ? translateLanguageCode.join(', ') : null,
             id: translateData['mainsnak']['datavalue']['value']['id'],
             value: translateValue.join(', '),
           });
