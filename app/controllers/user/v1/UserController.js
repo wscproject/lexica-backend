@@ -1,15 +1,26 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
-import { UserPreference, sequelize } from '../../../models';
+import { UserPreference, Contribution, sequelize } from '../../../models';
 import Status from '../../../utils/status';
+import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 
 export async function getUserProfile(req, res) {
   try {
     const { loggedInUser } = req;
 
-    return responseSuccess(res, loggedInUser);
+    // get ongoing contribution
+    const ongoingContributionData = await Contribution.findOne({
+      where: {
+        userId: loggedInUser.id,
+        status: Constant.CONTRIBUTION_STATUS.PENDING,
+      },
+    });
+
+    const ongoingContribution = ongoingContributionData ? true : false;
+
+    return responseSuccess(res, { ...loggedInUser, ongoingContribution });
   } catch (err) {
     return responseError(res, err);
   }

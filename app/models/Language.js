@@ -17,13 +17,7 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    titleId: {
-      field: 'title_id',
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    titleEn: {
-      field: 'title_en',
+    title: {
       type: Sequelize.STRING,
       allowNull: false,
     },
