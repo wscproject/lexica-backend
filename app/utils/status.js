@@ -73,6 +73,12 @@ module.exports = {
       MESSAGE: 'Ongoing contribution not found.',
     },
 
+    // LEXEME LANGUAGE
+    LANGUAGE_NOT_FOUND: {
+      CODE: 500500,
+      MESSAGE: 'language not found.',
+    },
+
     // GENERAL ERROR
     SOMETHING_WENT_WRONG: {
       CODE: 60001,

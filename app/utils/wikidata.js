@@ -3,8 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { Get, Post } from './axios';
 import Config from '../configs/env.config'
 import Status from './status';
+import Constant from './constants';
 
-export async function searchEntities({ search = '', language = 'id', uselang = 'id', limit, offset = 0 }) {
+export async function searchEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, uselang = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
   const params = {
       action: 'wbsearchentities',
       search,
@@ -22,7 +23,7 @@ export async function searchEntities({ search = '', language = 'id', uselang = '
   return response;
 };
 
-export async function getEntityDetail({ entityId, language = 'id', uselang = 'id', props = 'labels|claims', format = 'json' }){
+export async function getEntityDetail({ entityId, language = Constant.DISPLAY_LANGUAGE.ID.ISO, uselang = Constant.DISPLAY_LANGUAGE.ID.ISO, props = 'labels|claims', format = 'json' }){
   const params = {
       action: 'wbgetentities',
       ids: entityId,

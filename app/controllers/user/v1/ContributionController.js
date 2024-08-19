@@ -5,7 +5,7 @@ import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 import {
-  Contribution, ContributionDetail, sequelize,
+  Contribution, ContributionDetail, Language, UserPreference, sequelize,
 } from '../../../models';
 import { simpleQuery, generateRandomLexemeQuery, generateGetLexemeQuery } from '../../../utils/sparql';
 import { getCsrfToken, addItemToLexemeSense } from '../../../utils/wikidata';
@@ -14,6 +14,7 @@ export async function startContribution(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
+    const { language } = req.body;
     
     let createdContributionDetails = [];
     let existingLexeme = true;
@@ -28,10 +29,22 @@ export async function startContribution(req, res) {
     });
     
     if (ongoingContribution) {
+      // check existing contribution language
+      const existingLanguage = await Language.findOne({
+        where: {
+          externalId: ongoingContribution.languageId,
+        },
+        transaction,
+      });
+  
+      if (!existingLanguage) {
+        throw Status.ERROR.LANGUAGE_NOT_FOUND;
+      }
+      
       // return exisiting contribution data
       const existingContributionDetails = await ContributionDetail.findAll({
         where: {
-          contributionId: ongoingContribution.id 
+          contributionId: ongoingContribution.id,
         },
         order: [['order', 'ASC']],
         transaction,
@@ -50,7 +63,7 @@ export async function startContribution(req, res) {
       includeLexemeString = existingContributionDetailsMapping.join(", ");
 
       // get lexemes
-      const query = await generateGetLexemeQuery({ include: includeLexemeString });
+      const query = await generateGetLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguage });
       const queryResponse = await simpleQuery(query);
       if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
         const lexemes = queryResponse.results.bindings;
@@ -75,12 +88,24 @@ export async function startContribution(req, res) {
         throw Status.ERROR.LEXEMES_NOT_FOUND;
       }
     } else {
+      // check selected contribution language
+      const existingLanguage = await Language.findOne({
+        where: {
+          code: language,
+        },
+        transaction,
+      });
+  
+      if (!existingLanguage) {
+        throw Status.ERROR.LANGUAGE_NOT_FOUND;
+      }
+
       // create contribution data
       const createdContribution = await Contribution.create(
         {
           userId: loggedInUser.id,
           startTime: new Date(),
-          languageId: Constant.LANGUAGE.ID.CODE,
+          languageId: existingLanguage.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING,
         },
         { transaction }
@@ -89,6 +114,9 @@ export async function startContribution(req, res) {
       // find all updating lexemes 
       const ongoingLexemesContribution = await ContributionDetail.findAll({
         attributes: ['lexemeSenseId'],
+        where: {
+          languageId: existingLanguage.externalId,
+        },
         lock: transaction.LOCK.UPDATE,
         transaction,
       });
@@ -104,7 +132,7 @@ export async function startContribution(req, res) {
       }
 
       // get random lexemes
-      const query = await generateRandomLexemeQuery({ exclude: excludeLexemeString });
+      const query = await generateRandomLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguage });
       while (existingLexeme) {
         let orderNumber = 1;
         const queryResponse = await simpleQuery(query);
@@ -131,7 +159,7 @@ export async function startContribution(req, res) {
               contributionId: createdContribution.id,
               lexemeId: lexemeData.lexemeLabel.value,
               lexemeSenseId: lexemeData.senseLabel.value,
-              languageId: Constant.LANGUAGE.ID.CODE,
+              languageId: existingLanguage.externalId,
               categoryId: lexemeData.categoryQID.value,
               lemma: lexemeData.lemma.value,
               category: lexemeData.categoryLabel.value,
@@ -155,6 +183,11 @@ export async function startContribution(req, res) {
       }
 
       await ContributionDetail.bulkCreate(createdContributionDetails, { transaction });
+
+      await UserPreference.update({
+        languageId: existingLanguage.id,
+        language: existingLanguage.code,
+      }, { where: { id: loggedInUser.id }, transaction });
     }
 
     await transaction.commit();

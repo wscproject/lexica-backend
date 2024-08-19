@@ -97,16 +97,3 @@ export async function refreshToken(req, res) {
     return responseError(res, err);
   }
 }
-
-export async function getUserProfile(req, res) {
-  // const transaction = await sequelize.transaction();
-  try {
-    const { loggedInUser } = req;
-
-    // await transaction.commit();
-    return responseSuccess(res, loggedInUser);
-  } catch (err) {
-    // await transaction.rollback();
-    return responseError(res, err);
-  }
-}
