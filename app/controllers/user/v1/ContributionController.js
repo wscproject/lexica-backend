@@ -22,7 +22,7 @@ export async function startContribution(req, res) {
     // get ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
-        userId: loggedInUser.id,
+        userId: loggedInUser.userId,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
       transaction,
@@ -103,7 +103,7 @@ export async function startContribution(req, res) {
       // create contribution data
       const createdContribution = await Contribution.create(
         {
-          userId: loggedInUser.id,
+          userId: loggedInUser.userId,
           startTime: new Date(),
           languageId: existingLanguage.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING,
@@ -187,7 +187,7 @@ export async function startContribution(req, res) {
       await UserPreference.update({
         languageId: existingLanguage.id,
         language: existingLanguage.code,
-      }, { where: { id: loggedInUser.id }, transaction });
+      }, { where: { userId: loggedInUser.userId }, transaction });
     }
 
     await transaction.commit();
@@ -216,7 +216,7 @@ export async function updateContributionDetail(req, res) {
         as: 'contribution',
         require: true,
         where: {
-          userId: loggedInUser.id,
+          userId: loggedInUser.userId,
           status: Constant.CONTRIBUTION_STATUS.PENDING
         },
       },
@@ -265,7 +265,7 @@ export async function endContribution(req, res) {
     // get ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
-        userId: loggedInUser.id,
+        userId: loggedInUser.userId,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
       transaction,

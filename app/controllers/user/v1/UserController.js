@@ -13,7 +13,7 @@ export async function getUserProfile(req, res) {
     // get ongoing contribution
     const ongoingContributionData = await Contribution.findOne({
       where: {
-        userId: loggedInUser.id,
+        userId: loggedInUser.userId,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
     });
@@ -38,7 +38,7 @@ export async function updateUserPreference(req, res) {
 
     await UserPreference.update(updateUserPreference, {
       where: {
-        id: loggedInUser.id
+        userId: loggedInUser.userId
       },
       transaction
     });
