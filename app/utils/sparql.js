@@ -18,7 +18,7 @@ export async function generateRandomLexemeQuery ({ languageId, languageCode, exc
       wikibase:lemma ?lemma;
       ontolex:sense ?sense.
     FILTER(LANG(?lemma) = "${languageCode}")
-    OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${displayLanguage}")}
+    OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     MINUS { ?sense wdt:P5137 ?senseItem. }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${excludeQuery}
@@ -46,7 +46,7 @@ export async function generateGetLexemeQuery ({ languageId, languageCode, includ
       wikibase:lemma ?lemma;
       ontolex:sense ?sense.
     FILTER(LANG(?lemma) = "${languageCode}")
-    OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${displayLanguage}")}
+    OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${includeQuery}
     SERVICE wikibase:label { 
