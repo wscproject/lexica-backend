@@ -25,7 +25,7 @@ module.exports = (sequelizeConnection) => {
     displayLanguage: {
       field: 'display_language',
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     userId: {
       field: 'user_id',

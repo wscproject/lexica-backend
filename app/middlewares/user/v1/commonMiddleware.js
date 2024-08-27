@@ -53,7 +53,7 @@ export async function validateUser(req, res, next) {
       userPreference = await UserPreference.create(
         {
           userId: getProfileResponse.query.userinfo.id,
-          displayLanguage: Constant.DISPLAY_LANGUAGE.ID.ISO,
+          displayLanguage: null,
           languageId: null,
           language: null,
         }
