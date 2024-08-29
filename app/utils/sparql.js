@@ -39,7 +39,7 @@ export async function generateGetLexemeQuery ({ languageId, languageCode, includ
   const includeQuery = include ? `FILTER(?sense IN (${include}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?senseLabel ?lexemeLabel (GROUP_CONCAT(DISTINCT ?lemmaString; separator=", ") AS ?lemma) ?categoryLabel ?gloss ?categoryQID WHERE {
+  const query = `SELECT ?senseLabel ?lexemeLabel (GROUP_CONCAT(DISTINCT ?lemmaString; separator=" / ") AS ?lemma) ?categoryLabel ?gloss ?categoryQID WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
