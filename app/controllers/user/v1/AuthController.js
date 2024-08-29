@@ -3,6 +3,7 @@
 /* eslint-disable max-len */
 import { Op } from 'sequelize';
 import FormData from 'form-data';
+import { UserPreference } from '../../../models';
 import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import Config from '../../../configs/env.config';
@@ -14,6 +15,7 @@ export async function accessToken(req, res) {
   try {
     const {
       code,
+      displayLanguage,
     } = req.body;
 
     const getAccessTokenUrl = `${Config.wiki.wikimetaUrl}/w/rest.php/oauth2/access_token`;
@@ -53,6 +55,25 @@ export async function accessToken(req, res) {
 
     if (getProfileResponse.error) {
       throw Status.ERROR.TOKEN_INVALID;
+    }
+
+    const userPreference = await UserPreference.findOne({
+      where: {
+        userId: getProfileResponse.query.userinfo.id
+      }
+    });
+
+    if (!userPreference) {
+      await UserPreference.create(
+        {
+          userId: getProfileResponse.query.userinfo.id,
+          displayLanguage,
+          languageId: null,
+          language: null,
+        }
+      );
+    } else if (userPreference && !userPreference.displayLanguage) {
+      await userPreference.update({ displayLanguage });
     }
 
     // await transaction.commit();

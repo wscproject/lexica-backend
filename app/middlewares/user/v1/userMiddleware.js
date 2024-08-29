@@ -2,12 +2,11 @@
 import Joi from 'joi';
 import { joiFormErrors } from '../../../utils/function';
 import { responseError } from '../../../utils/output';
-import Constant from '../../../utils/constants';
 
 export async function validateUpdateUserPreference(req, res, next) {
   try {
     const schema = {
-      displayLanguage: Joi.string().valid(Constant.DISPLAY_LANGUAGE.ID.ISO, Constant.DISPLAY_LANGUAGE.EN.ISO).required(),
+      displayLanguage: Joi.string().required(),
     };
     
     const payloadObject = joiFormErrors({
