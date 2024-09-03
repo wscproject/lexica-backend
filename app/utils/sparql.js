@@ -11,13 +11,12 @@ export async function generateRandomLexemeQuery ({ languageId, languageCode, exc
   const excludeQuery = exclude ? `FILTER(?sense NOT IN (${exclude}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?lexemeLabel ?lemma ?senseLabel ?categoryLabel ?gloss ?categoryQID WHERE {
+  const query = `SELECT ?senseLabel ?lexemeLabel (GROUP_CONCAT(DISTINCT ?lemmaString; separator=" / ") AS ?lemma) ?categoryLabel ?gloss ?categoryQID (GROUP_CONCAT(DISTINCT ?uuidString; separator=" / ") AS ?uuid) WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
-      wikibase:lemma ?lemma;
+      wikibase:lemma ?lemmaString;
       ontolex:sense ?sense.
-    FILTER(LANG(?lemma) = "${languageCode}")
     OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     MINUS { ?sense wdt:P5137 ?senseItem. }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
@@ -25,8 +24,9 @@ export async function generateRandomLexemeQuery ({ languageId, languageCode, exc
     SERVICE wikibase:label { 
       bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]".
     }
-    BIND(UUID() AS ?uuid)
+    BIND(UUID() AS ?uuidString)
   }
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID ?uuid
   ORDER BY ?uuid
   LIMIT ${Config.lexeme.total}
   #${generatedUUID}`
@@ -39,20 +39,20 @@ export async function generateGetLexemeQuery ({ languageId, languageCode, includ
   const includeQuery = include ? `FILTER(?sense IN (${include}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?lexemeLabel ?lemma ?senseLabel ?categoryLabel ?gloss ?categoryQID WHERE {
+  const query = `SELECT ?senseLabel ?lexemeLabel (GROUP_CONCAT(DISTINCT ?lemmaString; separator=" / ") AS ?lemma) ?categoryLabel ?gloss ?categoryQID WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
-      wikibase:lemma ?lemma;
+      wikibase:lemma ?lemmaString;
       ontolex:sense ?sense.
-    FILTER(LANG(?lemma) = "${languageCode}")
     OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${includeQuery}
     SERVICE wikibase:label { 
       bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]".
     }
-  }`
+  }
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID`
 
   return query;
 }

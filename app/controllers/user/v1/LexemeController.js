@@ -12,16 +12,26 @@ export async function getLexemeSenseDetail(req, res) {
     const lexemeId = senseId.split("-")[0];
 
     // get ongoing contribution
-    const lexemeDetail = await getEntityDetail({ entityId: lexemeId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+    const lexemeDetail = await getEntityDetail({ entityId: lexemeId, language: loggedInUser.language, uselang: loggedInUser.language });
     const lexemeSense = lexemeDetail['entities'][lexemeId]['senses'].find(senseData => senseData['id'] === senseId);
+    
+    let lemma = '';
+    if (lexemeDetail['entities'][lexemeId]['lemmas']) {
+      // Extract the values from the object
+      const lemmaValues = Object.values(lexemeDetail['entities'][lexemeId]['lemmas']).map(lemma => lemma.value);
+      
+      // Join the values with " / " separator
+      lemma = lemmaValues.join(' / ');
+    }
+
     const lexemeResponse = {
       lexemeId,
       lexemeSenseId: senseId,
-      lemma: lexemeDetail['entities'][lexemeId]['lemmas'][loggedInUser.language] ? lexemeDetail['entities'][lexemeId]['lemmas'][loggedInUser.language]['value'] : '',
+      lemma,
       categoryId: lexemeDetail['entities'][lexemeId]['lexicalCategory'],
       category: "",
       languageId: lexemeDetail['entities'][lexemeId]['language'],
-      gloss: lexemeSense['glosses'] && lexemeSense['glosses'][loggedInUser.displayLanguage] ? lexemeSense['glosses'][loggedInUser.displayLanguage]['value'] : '',
+      gloss: lexemeSense['glosses'] && lexemeSense['glosses'][loggedInUser.language] ? lexemeSense['glosses'][loggedInUser.language]['value'] : '',
       statements: {
         images: null,
         antonym: null,

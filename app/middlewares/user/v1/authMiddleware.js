@@ -7,6 +7,7 @@ export async function validateGetAccessToken(req, res, next) {
   try {
     const schema = {
       code: Joi.string().required(),
+      displayLanguage: Joi.string().required(),
     };
     const payloadObject = joiFormErrors({
       joiSchema: schema,
