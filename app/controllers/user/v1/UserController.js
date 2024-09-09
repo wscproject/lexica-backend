@@ -30,11 +30,17 @@ export async function updateUserPreference(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
-    const { displayLanguage } = req.body;
+    const { displayLanguage, displayTheme } = req.body;
 
-    const updateUserPreference = {
-      displayLanguage,
-    };
+    const updateUserPreference = {};
+
+    if (displayLanguage) {
+      updateUserPreference.displayLanguage = displayLanguage;
+    }
+
+    if (displayTheme) {
+      updateUserPreference.displayTheme = displayTheme;
+    }
 
     await UserPreference.update(updateUserPreference, {
       where: {
