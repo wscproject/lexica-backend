@@ -27,6 +27,12 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.STRING,
       allowNull: true,
     },
+    displayTheme: {
+      field: 'display_theme',
+      type: Sequelize.ENUM('dark', 'light'),
+      allowNull: false,
+      defaultValue: 'light',
+    },
     userId: {
       field: 'user_id',
       type: Sequelize.STRING,
@@ -35,8 +41,7 @@ module.exports = (sequelizeConnection) => {
     createdAt: {
       field: 'created_at',
       type: Sequelize.DATE,
-      defaultValue: Sequelize.fn('now'),
-      allowNull: false,
+      allowNull: true,
     },
     updatedAt: {
       field: 'updated_at',

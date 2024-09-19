@@ -45,4 +45,9 @@ module.exports = {
     SKIP: 'skip',
     NO_ITEM: 'noItem',
   },
+  DISPLAY_THEME: {
+    DEFAULT: 'default',
+    DARK: 'dark',
+    LIGHT: 'light',
+  },
 };
