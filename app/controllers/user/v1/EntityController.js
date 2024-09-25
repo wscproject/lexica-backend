@@ -28,6 +28,7 @@ export async function getEntities(req, res) {
           label: entity.display.label.value,
           description: entity.display.description ? entity.display.description.value : '',
           image: entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE] ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0]['mainsnak']['datavalue']['value']}` : null,
+          language: loggedInUser.language,
         }
   
         entityResponse.push(temporaryEntity);
