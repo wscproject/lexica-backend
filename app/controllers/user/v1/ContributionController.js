@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
+import { Op } from 'sequelize';
 import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
@@ -112,23 +113,39 @@ export async function startContribution(req, res) {
       );
       
       // find all updating lexemes 
-      const ongoingLexemesContribution = await ContributionDetail.findAll({
+      const ongoingLexemeContributions = await ContributionDetail.findAll({
         attributes: ['lexemeSenseId'],
         where: {
           languageId: existingLanguage.externalId,
+          [Op.or]: [
+            { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
+            { 
+              status: Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM,
+              '$contribution.user_id$': loggedInUser.userId,
+            },
+          ],
         },
+        include: [
+          {
+            model: Contribution,
+            as: 'contribution',
+            attributes: [],
+          }
+        ],
         lock: transaction.LOCK.UPDATE,
         transaction,
       });
 
+      console.log(ongoingLexemeContributions);
+
       // generate exclude lexeme string
-      let excludeLexemeString = ''
-      if (ongoingLexemesContribution.length > 0) {
-        const ongoingLexemesContributionMapping = ongoingLexemesContribution.map(excludeData => {
+      let excludeLexemeString = '';
+      if (ongoingLexemeContributions.length > 0) {
+        const ongoingLexemeContributionsMapping = ongoingLexemeContributions.map(excludeData => {
           return `wd:${excludeData.lexemeSenseId}`
         });
 
-        excludeLexemeString = ongoingLexemesContributionMapping.join(", ");   
+        excludeLexemeString = ongoingLexemeContributionsMapping.join(", ");   
       }
 
       // get random lexemes
