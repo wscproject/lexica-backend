@@ -28,7 +28,7 @@ export async function getLanguages(req, res) {
 
     if (search) {
       queryParams.where[Op.or] = [
-        { title: { [Op.iLike]: `%${search.trim()}%` } },
+        { title: { [Op.like]: `%${search.trim()}%` } },
       ];
     }
 
