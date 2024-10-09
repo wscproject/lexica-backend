@@ -6,7 +6,7 @@ import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 import {
-  Contribution, ContributionConnectDetail, Language, UserPreference, sequelize,
+  Contribution, ContributionConnectDetail, Language, UserPreference, Activity, LanguageActivity, sequelize,
 } from '../../../models';
 import { simpleQuery, generateRandomLexemeQuery, generateGetLexemeQuery } from '../../../utils/sparql';
 import { getCsrfToken, addItemToLexemeSense } from '../../../utils/wikidata';
@@ -101,6 +101,33 @@ export async function startContributionConnect(req, res) {
         throw Status.ERROR.LANGUAGE_NOT_FOUND;
       }
 
+      const languageActivity = await LanguageActivity.findOne({
+        include:[
+          { 
+            attributes: [],
+            model: Language,
+            where: {
+              id: existingLanguage.id
+            },
+            as: 'language',
+            required: true,
+          },
+          {
+            attributes: [],
+            model: Activity,
+            where: {
+              type: Constant.ACTIVITY.CONNECT
+            },
+            as: 'activity',
+            required: true,
+          },
+        ],
+      });
+
+      if (!languageActivity) {
+        throw Status.ERROR.ACTIVITY_NOT_FOUND;
+      }
+
       // create contribution data
       const createdContribution = await Contribution.create(
         {
@@ -109,6 +136,7 @@ export async function startContributionConnect(req, res) {
           externalLanguageId: existingLanguage.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING,
           activityType: Constant.ACTIVITY.CONNECT,
+          languageActivityId: languageActivity.id,
         },
         { transaction }
       );

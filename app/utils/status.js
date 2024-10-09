@@ -76,7 +76,13 @@ module.exports = {
     // LEXEME LANGUAGE
     LANGUAGE_NOT_FOUND: {
       CODE: 500500,
-      MESSAGE: 'language not found.',
+      MESSAGE: 'Language not found.',
+    },
+
+    // ACTIVITY
+    ACTIVITY_NOT_FOUND: {
+      CODE: 500600,
+      MESSAGE: 'Activity not found for this language.',
     },
 
     // GENERAL ERROR

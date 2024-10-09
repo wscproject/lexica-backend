@@ -8,6 +8,15 @@ module.exports = (sequelizeConnection) => {
       primaryKey: true,
       allowNull: false,
     },
+    languageActivityId: {
+      field: 'language_activity_id',
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'language_activities', // name of Target model
+        key: 'id', // key in Target model that we're referencing
+      },
+    },
     externalUserId: {
       field: 'external_user_id',
       type: Sequelize.STRING,
