@@ -45,17 +45,17 @@ export async function validateUser(req, res, next) {
 
     let userPreference = await UserPreference.findOne({
       where: {
-        userId: getProfileResponse.query.userinfo.id
+        externalUserId: getProfileResponse.query.userinfo.id
       }
     });
 
     if (!userPreference) {
       userPreference = await UserPreference.create(
         {
-          userId: getProfileResponse.query.userinfo.id,
-          displayLanguage: null,
+          externalUserId: getProfileResponse.query.userinfo.id,
+          displayLanguageCode: null,
           languageId: null,
-          language: null,
+          languageCode: null,
         }
       );
     }

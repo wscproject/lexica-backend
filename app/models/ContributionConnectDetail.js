@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 
 module.exports = (sequelizeConnection) => {
-  const ContributionDetail = sequelizeConnection.define('ContributionDetail', {
+  const ContributionConnectDetail = sequelizeConnection.define('ContributionConnectDetail', {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
@@ -17,23 +17,28 @@ module.exports = (sequelizeConnection) => {
         key: 'id', // key in Target model that we're referencing
       },
     },
-    lexemeId: {
-      field: 'lexeme_id',
+    externalLexemeId: {
+      field: 'external_lexeme_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
-    lexemeSenseId: {
-      field: 'lexeme_sense_id',
+    externalLexemeSenseId: {
+      field: 'external_lexeme_sense_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
-    languageId: {
-      field: 'language_id',
+    externalLanguageId: {
+      field: 'external_language_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
-    categoryId: {
-      field: 'category_id',
+    externalCategoryId: {
+      field: 'external_category_id',
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    externalItemId: {
+      field: 'external_item_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -74,16 +79,16 @@ module.exports = (sequelizeConnection) => {
     },
   }, {
     freezeTableName: true,
-    tableName: 'contribution_details',
+    tableName: 'contribution_connect_details',
     paranoid: true,
   });
 
-  ContributionDetail.associate = (models) => {
-    ContributionDetail.belongsTo(models.Contribution, {
+  ContributionConnectDetail.associate = (models) => {
+    ContributionConnectDetail.belongsTo(models.Contribution, {
       as: 'contribution',
       foreignKey: 'contributionId',
     });
   };
 
-  return ContributionDetail;
+  return ContributionConnectDetail;
 };

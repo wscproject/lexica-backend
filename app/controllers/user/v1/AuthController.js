@@ -15,7 +15,7 @@ export async function accessToken(req, res) {
   try {
     const {
       code,
-      displayLanguage,
+      displayLanguageCode,
     } = req.body;
 
     const getAccessTokenUrl = `${Config.wiki.wikimetaUrl}/w/rest.php/oauth2/access_token`;
@@ -59,21 +59,21 @@ export async function accessToken(req, res) {
 
     const userPreference = await UserPreference.findOne({
       where: {
-        userId: getProfileResponse.query.userinfo.id
+        externalUserId: getProfileResponse.query.userinfo.id
       }
     });
 
     if (!userPreference) {
       await UserPreference.create(
         {
-          userId: getProfileResponse.query.userinfo.id,
-          displayLanguage,
+          externalUserId: getProfileResponse.query.userinfo.id,
+          displayLanguageCode,
           languageId: null,
           language: null,
         }
       );
-    } else if (userPreference && !userPreference.displayLanguage) {
-      await userPreference.update({ displayLanguage });
+    } else if (userPreference && !userPreference.displayLanguageCode) {
+      await userPreference.update({ displayLanguageCode });
     }
 
     // await transaction.commit();

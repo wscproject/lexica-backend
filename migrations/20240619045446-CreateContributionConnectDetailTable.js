@@ -1,6 +1,6 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('contribution_details', {
+    await queryInterface.createTable('contribution_connect_details', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -16,23 +16,23 @@ module.exports = {
           key: 'id', // key in Target model that we're referencing
         },
       },
-      lexemeId: {
-        field: 'lexeme_id',
+      externalLexemeId: {
+        field: 'external_lexeme_id',
         type: Sequelize.STRING,
         allowNull: false,
       },
-      lexemeSenseId: {
-        field: 'lexeme_sense_id',
+      externalLexemeSenseId: {
+        field: 'external_lexeme_sense_id',
         type: Sequelize.STRING,
         allowNull: false,
       },
-      languageId: {
-        field: 'language_id',
+      externalLanguageId: {
+        field: 'external_language_id',
         type: Sequelize.STRING,
         allowNull: false,
       },
-      categoryId: {
-        field: 'category_id',
+      externalCategoryId: {
+        field: 'external_category_id',
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -75,6 +75,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('contribution_details');
+    await queryInterface.dropTable('contribution_connect_details');
   },
 };
