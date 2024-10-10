@@ -186,7 +186,21 @@ export async function startContributionConnect(req, res) {
             const existingLexemeContributionConnectDetail = await ContributionConnectDetail.findOne({
               where: {
                 externalLexemeSenseId: lexemeData.senseLabel.value,
+                [Op.or]: [
+                  { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
+                  { 
+                    status: Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM,
+                    '$contribution.external_user_id$': loggedInUser.externalUserId,
+                  },
+                ],
               },
+              include: [
+                {
+                  model: Contribution,
+                  as: 'contribution',
+                  attributes: [],
+                }
+              ],
               attributes: ['externalLexemeSenseId'],
               lock: transaction.LOCK.UPDATE,
               transaction,
