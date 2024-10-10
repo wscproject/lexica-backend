@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.post('/connect/start', validateToken, validateUser, controller.startContributionConnect);
 router.put('/connect/:senseId', validateToken, validateUser, middleware.validateUpdateContributionDetail, controller.updateContributionConnectDetail);
-router.post('/end', validateToken, validateUser, controller.endContribution);
+router.post('/connect/end', validateToken, validateUser, controller.endContributionConnect);
 
 export default router;

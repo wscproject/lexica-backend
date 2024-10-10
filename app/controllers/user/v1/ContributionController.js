@@ -319,7 +319,7 @@ export async function updateContributionConnectDetail(req, res) {
   }
 }
 
-export async function endContribution(req, res) {
+export async function endContributionConnect(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
