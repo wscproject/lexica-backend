@@ -1,16 +1,14 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
-import { Op } from 'sequelize';
-import FormData from 'form-data';
-import { UserPreference } from '../../../models';
+import Jwt from 'jsonwebtoken';
+import { User } from '../../../models';
 import Status from '../../../utils/status';
-import Constant from '../../../utils/constants';
 import Config from '../../../configs/env.config';
 import { responseError, responseSuccess } from '../../../utils/output';
 import { Get, Post } from '../../../utils/axios';
 
-export async function accessToken(req, res) {
+export async function login(req, res) {
   // const transaction = await sequelize.transaction();
   try {
     const {
@@ -57,62 +55,46 @@ export async function accessToken(req, res) {
       throw Status.ERROR.TOKEN_INVALID;
     }
 
-    const userPreference = await UserPreference.findOne({
+    let user = await User.findOne({
       where: {
-        externalUserId: getProfileResponse.query.userinfo.id
+        externalId: getProfileResponse.query.userinfo.id
       }
     });
 
-    if (!userPreference) {
-      await UserPreference.create(
-        {
-          externalUserId: getProfileResponse.query.userinfo.id,
-          displayLanguageCode,
-          languageId: null,
-          language: null,
-        }
-      );
-    } else if (userPreference && !userPreference.displayLanguageCode) {
-      await userPreference.update({ displayLanguageCode });
+    if (!user) {
+      user = await User.create({
+        externalId: getProfileResponse.query.userinfo.id,
+        username: getProfileResponse.query.userinfo.name,
+        wikiAccessToken: getAccessTokenResponse.access_token,
+        wikiRefreshToken: getAccessTokenResponse.refresh_token,
+        displayLanguageCode,
+        languageId: null,
+        language: null,
+      });
+    } else {
+      await user.update({ 
+        displayLanguageCode,
+        username: getProfileResponse.query.userinfo.name,
+        wikiAccessToken: getAccessTokenResponse.access_token,
+        wikiRefreshToken: getAccessTokenResponse.refresh_token,
+      });
     }
 
-    // await transaction.commit();
-    return responseSuccess(res, {...getAccessTokenResponse, user: getProfileResponse.query.userinfo });
-  } catch (err) {
-    // await transaction.rollback();
-    return responseError(res, err);
-  }
-}
+    const userObject = {
+      id: user.id,
+      username: user.username,
+    };
 
-export async function refreshToken(req, res) {
-  // const transaction = await sequelize.transaction();
-  try {
-    const {
-      refreshToken,
-    } = req.body;
-
-    const refreshTokenUrl = `${Config.wiki.wikimetaUrl}/w/rest.php/oauth2/access_token`;
-    const refreshTokenBody = new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: Config.wiki.clientId,
-      client_secret: Config.wiki.clientSecret,
+    const token = Jwt.sign({ user: userObject }, Config.jwt.jwtSecret, {
+      expiresIn: Config.jwt.jwtExpirationInSeconds,
     });
 
-    const refreshTokenResponse = await Post({ 
-      url: refreshTokenUrl,
-      data: refreshTokenBody,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+    await user.update({ 
+      token,
     });
 
-    if (refreshTokenResponse.error) {
-      throw Status.ERROR.REFRESH_TOKEN_INVALID;
-    }
-
     // await transaction.commit();
-    return responseSuccess(res, { ...refreshTokenResponse });
+    return responseSuccess(res, {...userObject, token });
   } catch (err) {
     // await transaction.rollback();
     return responseError(res, err);

@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 
 module.exports = (sequelizeConnection) => {
-  const UserPreference = sequelizeConnection.define('UserPreference', {
+  const User = sequelizeConnection.define('User', {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
@@ -38,10 +38,28 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
       allowNull: true,
     },
-    externalUserId: {
-      field: 'external_user_id',
+    externalId: {
+      field: 'external_id',
       type: Sequelize.STRING,
       allowNull: false,
+    },
+    username: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    token: {
+      type: Sequelize.TEXT,
+      allowNull: true,
+    },
+    wikiAccessToken: {
+      field: 'wiki_access_token',
+      type: Sequelize.TEXT,
+      allowNull: true,
+    },
+    wikiRefreshToken: {
+      field: 'wiki_refresh_token',
+      type: Sequelize.TEXT,
+      allowNull: true,
     },
     createdAt: {
       field: 'created_at',
@@ -61,9 +79,9 @@ module.exports = (sequelizeConnection) => {
     },
   }, {
     freezeTableName: true,
-    tableName: 'user_preferences',
+    tableName: 'users',
     paranoid: true,
   });
 
-  return UserPreference;
+  return User;
 };

@@ -6,7 +6,7 @@ import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 import {
-  Contribution, ContributionConnectDetail, Language, UserPreference, Activity, LanguageActivity, sequelize,
+  Contribution, ContributionConnectDetail, Language, User, Activity, LanguageActivity, sequelize,
 } from '../../../models';
 import { simpleQuery, generateRandomLexemeQuery, generateGetLexemeQuery } from '../../../utils/sparql';
 import { getCsrfToken, addItemToLexemeSense } from '../../../utils/wikidata';
@@ -23,7 +23,7 @@ export async function startContributionConnect(req, res) {
     // get ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
-        externalUserId: loggedInUser.externalUserId,
+        userId: loggedInUser.id,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
       transaction,
@@ -70,20 +70,22 @@ export async function startContributionConnect(req, res) {
         const lexemes = queryResponse.results.bindings;
         for (const existingContributionConnectDetail of existingContributionConnectDetails) {
           const currentLexeme = lexemes.find(lexemeData => lexemeData.senseLabel.value === existingContributionConnectDetail.lexemeSenseId);
-          
+
           // set lexeme detail
-          createdContributionConnectDetails.push({
-            contributionId: ongoingContribution.id,
-            externalLexemeId: currentLexeme.lexemeLabel.value,
-            externalLexemeSenseId: currentLexeme.senseLabel.value,
-            externalLanguageId: existingContributionConnectDetail.languageId,
-            externalCategoryId: currentLexeme.categoryQID.value,
-            lemma: currentLexeme.lemma.value,
-            category: currentLexeme.categoryLabel.value,
-            gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
-            status: existingContributionConnectDetail.status,
-            order: existingContributionConnectDetail.order,
-          });
+          if (currentLexeme) {
+            createdContributionConnectDetails.push({
+              contributionId: ongoingContribution.id,
+              externalLexemeId: currentLexeme.lexemeLabel.value,
+              externalLexemeSenseId: currentLexeme.senseLabel.value,
+              externalLanguageId: existingContributionConnectDetail.languageId,
+              externalCategoryId: currentLexeme.categoryQID.value,
+              lemma: currentLexeme.lemma.value,
+              category: currentLexeme.categoryLabel.value,
+              gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
+              status: existingContributionConnectDetail.status,
+              order: existingContributionConnectDetail.order,
+            });
+          }
         }
       } else {
         throw Status.ERROR.LEXEMES_NOT_FOUND;
@@ -131,7 +133,8 @@ export async function startContributionConnect(req, res) {
       // create contribution data
       const createdContribution = await Contribution.create(
         {
-          externalUserId: loggedInUser.externalUserId,
+          userId: loggedInUser.id,
+          externalUserId: loggedInUser.externalId,
           startTime: new Date(),
           externalLanguageId: existingLanguage.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING,
@@ -150,7 +153,7 @@ export async function startContributionConnect(req, res) {
             { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
             { 
               status: Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM,
-              '$contribution.external_user_id$': loggedInUser.externalUserId,
+              '$contribution.external_user_id$': loggedInUser.externalId,
             },
           ],
         },
@@ -190,7 +193,7 @@ export async function startContributionConnect(req, res) {
                   { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
                   { 
                     status: Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM,
-                    '$contribution.external_user_id$': loggedInUser.externalUserId,
+                    '$contribution.external_user_id$': loggedInUser.externalId,
                   },
                 ],
               },
@@ -242,11 +245,11 @@ export async function startContributionConnect(req, res) {
 
       await ContributionConnectDetail.bulkCreate(createdContributionConnectDetails, { transaction });
 
-      await UserPreference.update({
+      await User.update({
         languageId: existingLanguage.id,
         languageCode: languageCode,
         activityType: Constant.ACTIVITY.CONNECT,
-      }, { where: { externalUserId: loggedInUser.externalUserId }, transaction });
+      }, { where: { id: loggedInUser.id }, transaction });
     }
 
     await transaction.commit();
@@ -275,7 +278,7 @@ export async function updateContributionConnectDetail(req, res) {
         as: 'contribution',
         require: true,
         where: {
-          externalUserId: loggedInUser.externalUserId,
+          externalUserId: loggedInUser.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING
         },
       },
@@ -327,7 +330,7 @@ export async function endContributionConnect(req, res) {
     // get ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
-        externalUserId: loggedInUser.externalUserId,
+        externalUserId: loggedInUser.externalId,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
       transaction,

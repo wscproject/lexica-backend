@@ -3,7 +3,7 @@ import Joi from 'joi';
 import { joiFormErrors } from '../../../utils/function';
 import { responseError } from '../../../utils/output';
 
-export async function validateGetAccessToken(req, res, next) {
+export async function validateLogin(req, res, next) {
   try {
     const schema = {
       code: Joi.string().required(),
@@ -15,29 +15,10 @@ export async function validateGetAccessToken(req, res, next) {
     });
 
     if (payloadObject) {
-      return responseError(res, payloadObject, 'validateGetAccessToken');
+      return responseError(res, payloadObject, 'validateLogin');
     }
     return next();
   } catch (err) {
     return responseError(res, 'joi error', 'validateGetAccessToken');
-  }
-}
-
-export async function validateRefreshAccessToken(req, res, next) {
-  try {
-    const schema = {
-      refreshToken: Joi.string().required(),
-    };
-    const payloadObject = joiFormErrors({
-      joiSchema: schema,
-      parameters: req.body,
-    });
-
-    if (payloadObject) {
-      return responseError(res, payloadObject, 'validateRefreshAccessToken');
-    }
-    return next();
-  } catch (err) {
-    return responseError(res, 'joi error', 'validateRefreshAccessToken');
   }
 }

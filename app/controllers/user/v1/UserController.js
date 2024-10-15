@@ -1,7 +1,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
-import { UserPreference, Contribution, Language, sequelize } from '../../../models';
+import { User, Contribution, Language, sequelize } from '../../../models';
 import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
@@ -13,7 +13,7 @@ export async function getUserProfile(req, res) {
     // get ongoing contribution
     const ongoingContributionData = await Contribution.findOne({
       where: {
-        externalUserId: loggedInUser.externalUserId,
+        userId: loggedInUser.id,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
     });
@@ -27,7 +27,19 @@ export async function getUserProfile(req, res) {
 
     const ongoingContribution = ongoingContributionData ? true : false;
 
-    return responseSuccess(res, { ...loggedInUser, ongoingContribution, language });
+    const response = {
+      id: loggedInUser.id,
+      username: loggedInUser.username,
+      languageId: loggedInUser.languageId,
+      languageCode: loggedInUser.languageCode,
+      displayLanguageCode: loggedInUser.displayLanguageCode,
+      displayTheme: loggedInUser.displayTheme,
+      activityType: loggedInUser.activityType,
+      ongoingContribution,
+      language
+    }
+
+    return responseSuccess(res, response);
   } catch (err) {
     return responseError(res, err);
   }
@@ -49,15 +61,15 @@ export async function updateUserPreference(req, res) {
       updateUserPreference.displayTheme = displayTheme;
     }
 
-    await UserPreference.update(updateUserPreference, {
+    await User.update(updateUserPreference, {
       where: {
-        externalUserId: loggedInUser.externalUserId
+        id: loggedInUser.id
       },
       transaction
     });
 
     await transaction.commit();
-    return responseSuccess(res, { ...loggedInUser, ...updateUserPreference});
+    return responseSuccess(res, { ...loggedInUser.id, ...updateUserPreference});
   } catch (err) {
     await transaction.rollback();
     return responseError(res, err);
