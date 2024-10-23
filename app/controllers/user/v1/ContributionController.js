@@ -264,7 +264,7 @@ export async function startContributionConnect(req, res) {
 export async function updateContributionConnectDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
-    const { loggedInUser, accessToken } = req;
+    const { loggedInUser } = req;
     const { senseId } = req.params;
     const { action, itemId } = req.body;
     
@@ -292,10 +292,10 @@ export async function updateContributionConnectDetail(req, res) {
     let status = '';
     let externalItemId = null;
     if (action === Constant.CONTRIBUTION_DETAIL_ACTION.ADD) {
-      const csrfToken = await getCsrfToken({ accessToken });
+      const csrfToken = await getCsrfToken({ accessToken: loggedInUser.wikiAccessToken });
       await addItemToLexemeSense({
         csrfToken,
-        accessToken,
+        accessToken: loggedInUser.wikiAccessToken,
         itemId,
         senseId: senseId,
       });
