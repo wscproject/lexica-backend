@@ -99,3 +99,35 @@ export async function addItemToLexemeSense({ accessToken, senseId, itemId, csrfT
   
   return response;
 }
+
+export async function addLemmaToLexeme({ accessToken, lexemeId, variantCode, csrfToken, lemma }){
+  const entity = {
+    lemmas: {
+      [variantCode]: {
+        value: lemma,
+        language: variantCode
+      }
+    },
+  };
+
+  const body =  {
+    id: lexemeId,
+    action: 'wbeditentity',
+    format: 'json',
+    token: csrfToken,
+    data: JSON.stringify(entity),
+    errorformat: 'plaintext',
+  }
+
+  const headers =  {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    Authorization: `Bearer ${accessToken}`,
+  }
+
+  const response = await Post({ url: Config.wiki.wikidataUrl, data: qs.stringify(body), headers });
+  if (response.errors) {
+    throw Status.ERROR.FAILED_UPDATE_SENSE_IN_WIKI;
+  }
+  
+  return response;
+}

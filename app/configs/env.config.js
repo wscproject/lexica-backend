@@ -13,8 +13,9 @@ const prodExt = {
     jwtSecret: process.env.JWT_SECRET,
     jwtExpirationInSeconds: process.env.JWT_EXPIRY,
   },
-  lexeme: {
-    total: process.env.TOTAL_LEXEME,
+  activity: {
+    totalConnectLexemeSense: process.env.TOTAL_CONNECT_LEXEME_SENSE,
+    totalScriptLexeme: process.env.TOTAL_SCRIPT_LEXEME,
   },
   db: {
     host: process.env.DB_HOST,
@@ -51,8 +52,9 @@ const production = {
     jwtSecret: process.env.JWT_SECRET,
     jwtExpirationInSeconds: process.env.JWT_EXPIRY,
   },
-  lexeme: {
-    total: process.env.TOTAL_LEXEME,
+  activity: {
+    totalConnectLexemeSense: process.env.TOTAL_CONNECT_LEXEME_SENSE,
+    totalScriptLexeme: process.env.TOTAL_SCRIPT_LEXEME,
   },
   db: {
     host: process.env.DB_HOST,

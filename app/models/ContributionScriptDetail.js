@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 
 module.exports = (sequelizeConnection) => {
-  const ContributionConnectDetail = sequelizeConnection.define('ContributionConnectDetail', {
+  const ContributionScriptDetail = sequelizeConnection.define('ContributionScriptDetail', {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
@@ -17,13 +17,17 @@ module.exports = (sequelizeConnection) => {
         key: 'id', // key in Target model that we're referencing
       },
     },
+    languageVariantId: {
+      field: 'language_variant_id',
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'language_variants', // name of Target model
+        key: 'id', // key in Target model that we're referencing
+      },
+    },
     externalLexemeId: {
       field: 'external_lexeme_id',
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    externalLexemeSenseId: {
-      field: 'external_lexeme_sense_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -37,23 +41,26 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    externalItemId: {
-      field: 'external_item_id',
+    languageVariantCode: {
+      field: 'language_variant_code',
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     lemma: {
-      field: 'lemma',
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     category: {
-      field: 'category',
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    lemmaVariant: {
+      field: 'lemma_variant',
       type: Sequelize.STRING,
       allowNull: true,
     },
     status: {
-      type: Sequelize.ENUM('pending', 'completed', 'noItem', 'skipped'),
+      type: Sequelize.ENUM('pending', 'skipped', 'completed'),
       allowNull: false,
     },
     order: {
@@ -79,16 +86,20 @@ module.exports = (sequelizeConnection) => {
     },
   }, {
     freezeTableName: true,
-    tableName: 'contribution_connect_details',
+    tableName: 'contribution_script_details',
     paranoid: true,
   });
 
-  ContributionConnectDetail.associate = (models) => {
-    ContributionConnectDetail.belongsTo(models.Contribution, {
+  ContributionScriptDetail.associate = (models) => {
+    ContributionScriptDetail.belongsTo(models.Contribution, {
       as: 'contribution',
       foreignKey: 'contributionId',
     });
+    ContributionScriptDetail.belongsTo(models.LanguageVariant, {
+      as: 'languageVariant',
+      foreignKey: 'languageVariantId',
+    });
   };
 
-  return ContributionConnectDetail;
+  return ContributionScriptDetail;
 };

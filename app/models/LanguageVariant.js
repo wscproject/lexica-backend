@@ -1,19 +1,28 @@
 import Sequelize from 'sequelize';
 
 module.exports = (sequelizeConnection) => {
-  const Language = sequelizeConnection.define('Language', {
+  const LanguageVariant = sequelizeConnection.define('LanguageVariant', {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
       allowNull: false,
     },
-    externalId: {
-      field: 'external_id',
+    languageId: {
+      field: 'language_id',
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'languages', // name of Target model
+        key: 'id', // key in Target model that we're referencing
+      },
+    },
+    code: {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    code: {
+    codePreview: {
+      field: 'code_preview',
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -40,23 +49,21 @@ module.exports = (sequelizeConnection) => {
     },
   }, {
     freezeTableName: true,
-    tableName: 'languages',
+    tableName: 'language_variants',
     paranoid: true,
   });
 
-  Language.associate = (models) => {
-    Language.belongsToMany(models.Language, {
-      through: models.LanguageActivity,
-      as: 'activities', // Alias for User
-      foreignKey: 'languageId', // Custom foreign key in the through table
-      otherKey: 'activityId', // Custom other key in the through table
-    });
-    
-    Language.hasOne(models.LanguageVariant, {
-      as: 'languageVariant',
+  LanguageVariant.associate = (models) => {
+    LanguageVariant.belongsTo(models.Language, {
+      as: 'language',
       foreignKey: 'languageId',
     });
+
+    LanguageVariant.hasMany(models.ContributionScriptDetail, {
+      as: 'contributionScriptDetails',
+      foreignKey: 'languageVariantId',
+    });    
   };
 
-  return Language;
+  return LanguageVariant;
 };
