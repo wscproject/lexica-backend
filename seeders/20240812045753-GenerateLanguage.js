@@ -84,5 +84,8 @@ module.exports = {
     }
   },
 
-  down: async () => {},
+  down: async (queryInterface, Sequelize) => {
+    // Remove inserted data
+    await queryInterface.bulkDelete('languages', null, {});
+  },
 };

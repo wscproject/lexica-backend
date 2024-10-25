@@ -10,6 +10,24 @@ module.exports = (sequelizeConnection) => {
     },
     userId: {
       field: 'user_id',
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'users', // name of Target model
+        key: 'id', // key in Target model that we're referencing
+      },
+    },
+    languageActivityId: {
+      field: 'language_activity_id',
+      type: Sequelize.UUID,
+      allowNull: false,
+      references: {
+        model: 'language_activities', // name of Target model
+        key: 'id', // key in Target model that we're referencing
+      },
+    },
+    externalUserId: {
+      field: 'external_user_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
@@ -18,14 +36,20 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.DATE,
       allowNull: false,
     },
-    languageId: {
-      field: 'language_id',
+    externalLanguageId: {
+      field: 'external_language_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
     status: {
       type: Sequelize.ENUM('pending', 'completed'),
       allowNull: false,
+    },
+    activityType: {
+      field: 'activity_type',
+      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
+      allowNull: false,
+      defaultValue: 'connect',
     },
     createdAt: {
       field: 'created_at',
@@ -51,8 +75,8 @@ module.exports = (sequelizeConnection) => {
   });
 
   Contribution.associate = (models) => {
-    Contribution.hasMany(models.ContributionDetail, {
-      as: 'contributionDetails',
+    Contribution.hasMany(models.ContributionConnectDetail, {
+      as: 'contributionConnectDetails',
       foreignKey: 'contributionId',
     });
   };

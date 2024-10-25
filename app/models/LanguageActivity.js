@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize';
 
 module.exports = (sequelizeConnection) => {
-  const UserPreference = sequelizeConnection.define('UserPreference', {
+  const LanguageActivity = sequelizeConnection.define('LanguageActivity', {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
@@ -11,37 +11,26 @@ module.exports = (sequelizeConnection) => {
     languageId: {
       field: 'language_id',
       type: Sequelize.UUID,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'languages', // name of Target model
         key: 'id', // key in Target model that we're referencing
       },
     },
-    language: {
-      field: 'language',
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    displayLanguage: {
-      field: 'display_language',
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    displayTheme: {
-      field: 'display_theme',
-      type: Sequelize.ENUM('dark', 'light'),
+    activityId: {
+      field: 'activity_id',
+      type: Sequelize.UUID,
       allowNull: false,
-      defaultValue: 'light',
-    },
-    userId: {
-      field: 'user_id',
-      type: Sequelize.STRING,
-      allowNull: false,
+      references: {
+        model: 'activities', // name of Target model
+        key: 'id', // key in Target model that we're referencing
+      },
     },
     createdAt: {
       field: 'created_at',
       type: Sequelize.DATE,
-      allowNull: true,
+      defaultValue: Sequelize.fn('now'),
+      allowNull: false,
     },
     updatedAt: {
       field: 'updated_at',
@@ -56,9 +45,21 @@ module.exports = (sequelizeConnection) => {
     },
   }, {
     freezeTableName: true,
-    tableName: 'user_preferences',
+    tableName: 'language_activities',
     paranoid: true,
   });
 
-  return UserPreference;
+  LanguageActivity.associate = (models) => {
+    LanguageActivity.belongsTo(models.Language, {
+      as: 'language',
+      foreignKey: 'languageId',
+    });
+
+    LanguageActivity.belongsTo(models.Activity, {
+      as: 'activity',
+      foreignKey: 'activityId',
+    });    
+  };
+
+  return LanguageActivity;
 };

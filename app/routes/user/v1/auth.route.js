@@ -5,7 +5,6 @@ import { validateToken, validateUser } from '../../../middlewares/user/v1/common
 
 const router = express.Router();
 
-router.post('/access-token', middleware.validateGetAccessToken, controller.accessToken);
-router.post('/refresh-token', middleware.validateRefreshAccessToken, controller.refreshToken);
+router.post('/login', middleware.validateLogin, controller.login);
 
 export default router;

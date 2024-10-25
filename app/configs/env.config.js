@@ -7,6 +7,11 @@ const prodExt = {
     host: process.env.APP_HOST,
     port: Number(process.env.APP_PORT),
     isStaging: process.env.IS_STAGING,
+    baseImageUrl: process.env.BASE_IMAGE_URL,
+  },
+  jwt: {
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpirationInSeconds: process.env.JWT_EXPIRY,
   },
   lexeme: {
     total: process.env.TOTAL_LEXEME,
@@ -40,6 +45,11 @@ const production = {
     host: process.env.APP_HOST,
     port: Number(process.env.APP_PORT),
     isStaging: process.env.IS_STAGING,
+    baseImageUrl: process.env.BASE_IMAGE_URL,
+  },
+  jwt: {
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpirationInSeconds: process.env.JWT_EXPIRY,
   },
   lexeme: {
     total: process.env.TOTAL_LEXEME,

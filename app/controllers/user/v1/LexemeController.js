@@ -12,7 +12,7 @@ export async function getLexemeSenseDetail(req, res) {
     const lexemeId = senseId.split("-")[0];
 
     // get ongoing contribution
-    const lexemeDetail = await getEntityDetail({ entityId: lexemeId, language: loggedInUser.language, uselang: loggedInUser.language });
+    const lexemeDetail = await getEntityDetail({ entityId: lexemeId, language: loggedInUser.languageCode, uselang: loggedInUser.languageCode });
     const lexemeSense = lexemeDetail['entities'][lexemeId]['senses'].find(senseData => senseData['id'] === senseId);
     
     let lemma = '';
@@ -25,13 +25,13 @@ export async function getLexemeSenseDetail(req, res) {
     }
 
     const lexemeResponse = {
-      lexemeId,
-      lexemeSenseId: senseId,
+      externalLexemeId: lexemeId,
+      externalLexemeSenseId: senseId,
       lemma,
-      categoryId: lexemeDetail['entities'][lexemeId]['lexicalCategory'],
+      externalCategoryId: lexemeDetail['entities'][lexemeId]['lexicalCategory'],
       category: "",
-      languageId: lexemeDetail['entities'][lexemeId]['language'],
-      gloss: lexemeSense['glosses'] && lexemeSense['glosses'][loggedInUser.language] ? lexemeSense['glosses'][loggedInUser.language]['value'] : '',
+      externalLanguageId: lexemeDetail['entities'][lexemeId]['language'],
+      gloss: lexemeSense['glosses'] && lexemeSense['glosses'][loggedInUser.languageCode] ? lexemeSense['glosses'][loggedInUser.languageCode]['value'] : '',
       statements: {
         images: null,
         antonym: null,
@@ -45,8 +45,8 @@ export async function getLexemeSenseDetail(req, res) {
 
     // get category value
     const lexemeCategoryId = lexemeDetail['entities'][lexemeId]['lexicalCategory'];
-    const lexemeCategory = await getEntityDetail({ entityId: lexemeCategoryId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
-    lexemeResponse.category = lexemeCategory['entities'][lexemeCategoryId]['labels'][loggedInUser.displayLanguage] ? lexemeCategory['entities'][lexemeCategoryId]['labels'][loggedInUser.displayLanguage]['value'] :  '';
+    const lexemeCategory = await getEntityDetail({ entityId: lexemeCategoryId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
+    lexemeResponse.category = lexemeCategory['entities'][lexemeCategoryId]['labels'][loggedInUser.displayLanguageCode] ? lexemeCategory['entities'][lexemeCategoryId]['labels'][loggedInUser.displayLanguageCode]['value'] :  '';
 
     // get images
     if (lexemeSense['claims'] && lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
@@ -74,11 +74,11 @@ export async function getLexemeSenseDetail(req, res) {
       for (const antonymData of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.ANTONYM]) {
         if (antonymData['mainsnak']['datavalue']['value']['id']) {
           const antonymId = antonymData['mainsnak']['datavalue']['value']['id'].split('-')[0];
-          const antonymDetail = await getEntityDetail({ entityId: antonymId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+          const antonymDetail = await getEntityDetail({ entityId: antonymId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           antonym.push({
             id: antonymData['mainsnak']['datavalue']['value']['id'],
-            value: antonymDetail['entities'][antonymId]['lemmas'][loggedInUser.language] ? antonymDetail['entities'][antonymId]['lemmas'][loggedInUser.language]['value'] : '',
+            value: antonymDetail['entities'][antonymId]['lemmas'][loggedInUser.languageCode] ? antonymDetail['entities'][antonymId]['lemmas'][loggedInUser.languageCode]['value'] : '',
           });
         }
       }
@@ -97,11 +97,11 @@ export async function getLexemeSenseDetail(req, res) {
       for (const synonymData of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.SYNONYM]) {
         if (synonymData['mainsnak']['datavalue']['value']['id']) {
           const synonymId = synonymData['mainsnak']['datavalue']['value']['id'].split('-')[0];
-          const synonymDetail = await getEntityDetail({ entityId: synonymId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+          const synonymDetail = await getEntityDetail({ entityId: synonymId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           synonym.push({
             id: synonymData['mainsnak']['datavalue']['value']['id'],
-            value: synonymDetail['entities'][synonymId]['lemmas'][loggedInUser.language] ? synonymDetail['entities'][synonymId]['lemmas'][loggedInUser.language]['value'] : '',
+            value: synonymDetail['entities'][synonymId]['lemmas'][loggedInUser.languageCode] ? synonymDetail['entities'][synonymId]['lemmas'][loggedInUser.languageCode]['value'] : '',
           });
         }
       }
@@ -122,9 +122,9 @@ export async function getLexemeSenseDetail(req, res) {
           const translateValue = [];
           const translateLanguageCode = [];
           const translateId = translateData['mainsnak']['datavalue']['value']['id'].split('-')[0];
-          const translateDetail = await getEntityDetail({ entityId: translateId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+          const translateDetail = await getEntityDetail({ entityId: translateId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
           const translateLanguageId = translateDetail['entities'][translateId]['language'];
-          const language = await getEntityDetail({ entityId: translateLanguageId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+          const language = await getEntityDetail({ entityId: translateLanguageId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           for (const translateLemmaKey in translateDetail['entities'][translateId]['lemmas']) {
             const translateLemma = translateDetail['entities'][translateId]['lemmas'][translateLemmaKey];
@@ -133,7 +133,7 @@ export async function getLexemeSenseDetail(req, res) {
           }
 
           translate.push({
-            language: language['entities'][translateLanguageId]['labels'][loggedInUser.displayLanguage] ? language['entities'][translateLanguageId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+            language: language['entities'][translateLanguageId]['labels'][loggedInUser.displayLanguageCode] ? language['entities'][translateLanguageId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
             code: translateLanguageCode.length > 0 ? translateLanguageCode.join(', ') : null,
             id: translateData['mainsnak']['datavalue']['value']['id'],
             value: translateValue.join(', '),
@@ -155,11 +155,11 @@ export async function getLexemeSenseDetail(req, res) {
       for (const locationOfSenseUsageData of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.LOCATION_OF_SENSE_USAGE]) {
         if (locationOfSenseUsageData['mainsnak']['datavalue']['value']['id']) {
           const locationOfSenseUsageId = locationOfSenseUsageData['mainsnak']['datavalue']['value']['id'];
-          const locationOfSenseUsageDetail = await getEntityDetail({ entityId: locationOfSenseUsageId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+          const locationOfSenseUsageDetail = await getEntityDetail({ entityId: locationOfSenseUsageId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           locationOfSenseUsage.push({
             id: locationOfSenseUsageData['mainsnak']['datavalue']['value']['id'],
-            value: locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][loggedInUser.displayLanguage] ? locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+            value: locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][loggedInUser.displayLanguageCode] ? locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
           });
         }
       }
@@ -178,11 +178,11 @@ export async function getLexemeSenseDetail(req, res) {
       for (const languageStyleData of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.LANGUAGE_STYLE]) {
         if (languageStyleData['mainsnak']['datavalue']['value']['id']) {
           const languageStyleId = languageStyleData['mainsnak']['datavalue']['value']['id'];
-          const languageStyleDetail = await getEntityDetail({ entityId: languageStyleId, language: loggedInUser.displayLanguage, uselang: loggedInUser.language });
+          const languageStyleDetail = await getEntityDetail({ entityId: languageStyleId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           languageStyle.push({
             id: languageStyleData['mainsnak']['datavalue']['value']['id'],
-            value: languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.displayLanguage] ? languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.displayLanguage]['value'] : '',
+            value: languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.displayLanguageCode] ? languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
           });
         }
       }

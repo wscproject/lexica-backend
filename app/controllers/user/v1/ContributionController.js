@@ -1,28 +1,29 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
+import { Op } from 'sequelize';
 import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 import {
-  Contribution, ContributionDetail, Language, UserPreference, sequelize,
+  Contribution, ContributionConnectDetail, Language, User, Activity, LanguageActivity, sequelize,
 } from '../../../models';
 import { simpleQuery, generateRandomLexemeQuery, generateGetLexemeQuery } from '../../../utils/sparql';
 import { getCsrfToken, addItemToLexemeSense } from '../../../utils/wikidata';
 
-export async function startContribution(req, res) {
+export async function startContributionConnect(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
-    const { language } = req.body;
+    const { languageCode } = req.body;
     
-    let createdContributionDetails = [];
+    let createdContributionConnectDetails = [];
     let existingLexeme = true;
 
     // get ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
-        userId: loggedInUser.userId,
+        userId: loggedInUser.id,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
       transaction,
@@ -32,7 +33,7 @@ export async function startContribution(req, res) {
       // check existing contribution language
       const existingLanguage = await Language.findOne({
         where: {
-          externalId: ongoingContribution.languageId,
+          externalId: ongoingContribution.externalLanguageId,
         },
         transaction,
       });
@@ -42,7 +43,7 @@ export async function startContribution(req, res) {
       }
       
       // return exisiting contribution data
-      const existingContributionDetails = await ContributionDetail.findAll({
+      const existingContributionConnectDetails = await ContributionConnectDetail.findAll({
         where: {
           contributionId: ongoingContribution.id,
         },
@@ -50,39 +51,41 @@ export async function startContribution(req, res) {
         transaction,
       });
 
-      if (existingContributionDetails.length < 1) {
+      if (existingContributionConnectDetails.length < 1) {
         throw Status.ERROR.LEXEMES_NOT_FOUND;
       }
 
       // generate include lexeme string
       let includeLexemeString = '';
-      const existingContributionDetailsMapping = existingContributionDetails.map(includeData => {
-        return `wd:${includeData.lexemeSenseId}`
+      const existingContributionConnectDetailsMapping = existingContributionConnectDetails.map(includeData => {
+        return `wd:${includeData.externalLexemeSenseId}`
       });
 
-      includeLexemeString = existingContributionDetailsMapping.join(", ");
+      includeLexemeString = existingContributionConnectDetailsMapping.join(", ");
 
       // get lexemes
-      const query = await generateGetLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguage });
+      const query = await generateGetLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
       const queryResponse = await simpleQuery(query);
       if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
         const lexemes = queryResponse.results.bindings;
-        for (const existingContributionDetail of existingContributionDetails) {
-          const currentLexeme = lexemes.find(lexemeData => lexemeData.senseLabel.value === existingContributionDetail.lexemeSenseId);
-          
+        for (const existingContributionConnectDetail of existingContributionConnectDetails) {
+          const currentLexeme = lexemes.find(lexemeData => lexemeData.senseLabel.value === existingContributionConnectDetail.lexemeSenseId);
+
           // set lexeme detail
-          createdContributionDetails.push({
-            contributionId: ongoingContribution.id,
-            lexemeId: currentLexeme.lexemeLabel.value,
-            lexemeSenseId: currentLexeme.senseLabel.value,
-            languageId: existingContributionDetail.languageId,
-            categoryId: currentLexeme.categoryQID.value,
-            lemma: currentLexeme.lemma.value,
-            category: currentLexeme.categoryLabel.value,
-            gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
-            status: existingContributionDetail.status,
-            order: existingContributionDetail.order,
-          });
+          if (currentLexeme) {
+            createdContributionConnectDetails.push({
+              contributionId: ongoingContribution.id,
+              externalLexemeId: currentLexeme.lexemeLabel.value,
+              externalLexemeSenseId: currentLexeme.senseLabel.value,
+              externalLanguageId: existingContributionConnectDetail.languageId,
+              externalCategoryId: currentLexeme.categoryQID.value,
+              lemma: currentLexeme.lemma.value,
+              category: currentLexeme.categoryLabel.value,
+              gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
+              status: existingContributionConnectDetail.status,
+              order: existingContributionConnectDetail.order,
+            });
+          }
         }
       } else {
         throw Status.ERROR.LEXEMES_NOT_FOUND;
@@ -91,7 +94,7 @@ export async function startContribution(req, res) {
       // check selected contribution language
       const existingLanguage = await Language.findOne({
         where: {
-          code: language,
+          code: languageCode,
         },
         transaction,
       });
@@ -100,67 +103,125 @@ export async function startContribution(req, res) {
         throw Status.ERROR.LANGUAGE_NOT_FOUND;
       }
 
+      const languageActivity = await LanguageActivity.findOne({
+        include:[
+          { 
+            attributes: [],
+            model: Language,
+            where: {
+              id: existingLanguage.id
+            },
+            as: 'language',
+            required: true,
+          },
+          {
+            attributes: [],
+            model: Activity,
+            where: {
+              type: Constant.ACTIVITY.CONNECT
+            },
+            as: 'activity',
+            required: true,
+          },
+        ],
+      });
+
+      if (!languageActivity) {
+        throw Status.ERROR.ACTIVITY_NOT_FOUND;
+      }
+
       // create contribution data
       const createdContribution = await Contribution.create(
         {
-          userId: loggedInUser.userId,
+          userId: loggedInUser.id,
+          externalUserId: loggedInUser.externalId,
           startTime: new Date(),
-          languageId: existingLanguage.externalId,
+          externalLanguageId: existingLanguage.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING,
+          activityType: Constant.ACTIVITY.CONNECT,
+          languageActivityId: languageActivity.id,
         },
         { transaction }
       );
       
       // find all updating lexemes 
-      const ongoingLexemesContribution = await ContributionDetail.findAll({
-        attributes: ['lexemeSenseId'],
+      const ongoingLexemeContributions = await ContributionConnectDetail.findAll({
+        attributes: ['externalLexemeSenseId'],
         where: {
-          languageId: existingLanguage.externalId,
+          externalLanguageId: existingLanguage.externalId,
+          [Op.or]: [
+            { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
+            { 
+              status: Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM,
+              '$contribution.external_user_id$': loggedInUser.externalId,
+            },
+          ],
         },
+        include: [
+          {
+            model: Contribution,
+            as: 'contribution',
+            attributes: [],
+          }
+        ],
         lock: transaction.LOCK.UPDATE,
         transaction,
       });
 
       // generate exclude lexeme string
-      let excludeLexemeString = ''
-      if (ongoingLexemesContribution.length > 0) {
-        const ongoingLexemesContributionMapping = ongoingLexemesContribution.map(excludeData => {
-          return `wd:${excludeData.lexemeSenseId}`
+      let excludeLexemeString = '';
+      if (ongoingLexemeContributions.length > 0) {
+        const ongoingLexemeContributionsMapping = ongoingLexemeContributions.map(excludeData => {
+          return `wd:${excludeData.externalLexemeSenseId}`
         });
 
-        excludeLexemeString = ongoingLexemesContributionMapping.join(", ");   
+        excludeLexemeString = ongoingLexemeContributionsMapping.join(", ");   
       }
 
       // get random lexemes
-      const query = await generateRandomLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguage });
+      const query = await generateRandomLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
       while (existingLexeme) {
         let orderNumber = 1;
         const queryResponse = await simpleQuery(query);
         if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
           const randomLexeme = queryResponse.results.bindings;
           for (const lexemeData of randomLexeme) {
-            const existingLexemeContributionDetail = await ContributionDetail.findOne({
+            const existingLexemeContributionConnectDetail = await ContributionConnectDetail.findOne({
               where: {
-                lexemeSenseId: lexemeData.senseLabel.value,
+                externalLexemeSenseId: lexemeData.senseLabel.value,
+                [Op.or]: [
+                  { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
+                  { 
+                    status: Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM,
+                    '$contribution.external_user_id$': loggedInUser.externalId,
+                  },
+                ],
               },
-              attributes: ['lexemeSenseId'],
+              include: [
+                {
+                  model: Contribution,
+                  as: 'contribution',
+                  attributes: [],
+                }
+              ],
+              attributes: ['externalLexemeSenseId'],
               lock: transaction.LOCK.UPDATE,
               transaction,
             });
 
             // validate exisitng lexeme contribution detail
-            if (existingLexemeContributionDetail) {
+            if (existingLexemeContributionConnectDetail) {
               existingLexeme = true;
               break;
             }
 
             // set lexeme detail
-            createdContributionDetails.push({
+            createdContributionConnectDetails.push({
               contributionId: createdContribution.id,
-              lexemeId: lexemeData.lexemeLabel.value,
-              lexemeSenseId: lexemeData.senseLabel.value,
-              languageId: existingLanguage.externalId,
-              categoryId: lexemeData.categoryQID.value,
+              externalLexemeId: lexemeData.lexemeLabel.value,
+              externalLexemeSenseId: lexemeData.senseLabel.value,
+              externalLanguageId: existingLanguage.externalId,
+              externalCategoryId: lexemeData.categoryQID.value,
               lemma: lexemeData.lemma.value,
               category: lexemeData.categoryLabel.value,
               status: "pending",
@@ -178,20 +239,21 @@ export async function startContribution(req, res) {
       }
 
       // validate if created contribution not empty
-      if (createdContributionDetails.length < 1) {
+      if (createdContributionConnectDetails.length < 1) {
         throw Status.ERROR.LEXEMES_NOT_FOUND;
       }
 
-      await ContributionDetail.bulkCreate(createdContributionDetails, { transaction });
+      await ContributionConnectDetail.bulkCreate(createdContributionConnectDetails, { transaction });
 
-      await UserPreference.update({
+      await User.update({
         languageId: existingLanguage.id,
-        language: existingLanguage.code,
-      }, { where: { userId: loggedInUser.userId }, transaction });
+        languageCode: languageCode,
+        activityType: Constant.ACTIVITY.CONNECT,
+      }, { where: { id: loggedInUser.id }, transaction });
     }
 
     await transaction.commit();
-    return responseSuccess(res, createdContributionDetails);
+    return responseSuccess(res, createdContributionConnectDetails);
   } catch (err) {
     console.log(err);
     await transaction.rollback();
@@ -199,16 +261,16 @@ export async function startContribution(req, res) {
   }
 }
 
-export async function updateContributionDetail(req, res) {
+export async function updateContributionConnectDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
-    const { loggedInUser, accessToken } = req;
+    const { loggedInUser } = req;
     const { senseId } = req.params;
     const { action, itemId } = req.body;
     
-    const contributionDetail = await ContributionDetail.findOne({
+    const contributionConnectDetail = await ContributionConnectDetail.findOne({
       where: {
-        lexemeSenseId: senseId,
+        externalLexemeSenseId: senseId,
         status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING,
       },
       include: {
@@ -216,27 +278,29 @@ export async function updateContributionDetail(req, res) {
         as: 'contribution',
         require: true,
         where: {
-          userId: loggedInUser.userId,
+          externalUserId: loggedInUser.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING
         },
       },
       transaction,
     });
 
-    if (!contributionDetail) {
+    if (!contributionConnectDetail) {
       throw Status.ERROR.CONTRIBUTION_DETAIL_NOT_FOUND;
     }
 
     let status = '';
+    let externalItemId = null;
     if (action === Constant.CONTRIBUTION_DETAIL_ACTION.ADD) {
-      const csrfToken = await getCsrfToken({ accessToken });
+      const csrfToken = await getCsrfToken({ accessToken: loggedInUser.wikiAccessToken });
       await addItemToLexemeSense({
         csrfToken,
-        accessToken,
+        accessToken: loggedInUser.wikiAccessToken,
         itemId,
         senseId: senseId,
       });
 
+      externalItemId = itemId;
       status = Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED;
     } else if (action === Constant.CONTRIBUTION_DETAIL_ACTION.NO_ITEM) {
       status = Constant.CONTRIBUTION_DETAIL_STATUS.NO_ITEM;
@@ -245,19 +309,20 @@ export async function updateContributionDetail(req, res) {
     }
 
     // update contribution detail status
-    await contributionDetail.update({
+    await contributionConnectDetail.update({
       status,
+      externalItemId,
     }, { transaction });
 
     await transaction.commit();
-    return responseSuccess(res, contributionDetail);
+    return responseSuccess(res, contributionConnectDetail);
   } catch (err) {
     await transaction.rollback();
     return responseError(res, err);
   }
 }
 
-export async function endContribution(req, res) {
+export async function endContributionConnect(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
@@ -265,7 +330,7 @@ export async function endContribution(req, res) {
     // get ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
-        userId: loggedInUser.userId,
+        externalUserId: loggedInUser.externalId,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
       },
       transaction,
@@ -275,7 +340,7 @@ export async function endContribution(req, res) {
       throw Status.ERROR.ON_GOING_CONTRIBUTION_NOT_FOUND;
     }
 
-    await ContributionDetail.destroy({
+    await ContributionConnectDetail.destroy({
       where: {
         contributionId: ongoingContribution.id,
         status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED],

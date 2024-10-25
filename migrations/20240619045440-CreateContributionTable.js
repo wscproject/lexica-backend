@@ -7,8 +7,8 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
-      userId: {
-        field: 'user_id',
+      externalUserId: {
+        field: 'external_user_id',
         type: Sequelize.STRING,
         allowNull: false,
       },
@@ -17,8 +17,8 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-      languageId: {
-        field: 'language_id',
+      externalLanguageId: {
+        field: 'external_language_id',
         type: Sequelize.STRING,
         allowNull: false,
       },

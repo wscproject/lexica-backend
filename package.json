@@ -32,6 +32,7 @@
     "http-errors": "~1.6.2",
     "joi": "^14.3.1",
     "joi-errors-for-forms": "^0.2.6",
+    "jsonwebtoken": "^9.0.2",
     "method-override": "^3.0.0",
     "morgan": "^1.10.0",
     "mysql2": "^3.10.2",

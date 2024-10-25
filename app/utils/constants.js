@@ -50,4 +50,8 @@ module.exports = {
     DARK: 'dark',
     LIGHT: 'light',
   },
+  ACTIVITY: {
+    CONNECT: 'connect',
+    SCRIPT: 'script',
+  }
 };

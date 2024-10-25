@@ -32,7 +32,7 @@ export async function validateUpdateContributionDetail(req, res, next) {
 export async function validateStartContribution(req, res, next) {
   try {
     const schema = {
-      language: Joi.string().required(),
+      languageCode: Joi.string().required(),
     };
     const payloadObject = joiFormErrors({
       joiSchema: schema,

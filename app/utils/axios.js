@@ -7,9 +7,9 @@ const queryParser = (params) => {
   let queryParams = '';
   for (const key in params) {
     if (!queryParams) {
-      queryParams = queryParams.concat(`?${key}=${params[key]}`);
+      queryParams = queryParams.concat(`?${key}=${encodeURIComponent(params[key])}`);
     } else {
-      queryParams = queryParams.concat(`&${key}=${params[key]}`);
+      queryParams = queryParams.concat(`&${key}=${encodeURIComponent(params[key])}`);
     }
   }
   return queryParams;

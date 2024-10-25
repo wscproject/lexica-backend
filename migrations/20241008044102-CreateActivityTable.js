@@ -1,34 +1,32 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('user_preferences', {
+    await queryInterface.createTable('activities', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
         allowNull: false,
       },
-      languageId: {
-        field: 'language_id',
-        type: Sequelize.UUID,
-        allowNull: true,
-        references: {
-          model: 'languages', // name of Target model
-          key: 'id', // key in Target model that we're referencing
-        },
-      },
-      languageCode: {
-        field: 'language_code',
+      title: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
       },
-      displayLanguageCode: {
-        field: 'display_language_code',
-        type: Sequelize.STRING,
-        allowNull: true,
+      description: {
+        type: Sequelize.TEXT,
+        allowNull: false,
       },
-      externalUserId: {
-        field: 'external_user_id',
-        type: Sequelize.STRING,
+      type: {
+        type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
+        allowNull: false,
+        unique: true,
+      },
+      imageUrl: {
+        field: 'image_url',
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      order: {
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
       createdAt: {
@@ -52,6 +50,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('user_preferences');
+    await queryInterface.dropTable('activities');
   },
 };

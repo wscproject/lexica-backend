@@ -5,14 +5,14 @@ import { Op } from 'sequelize';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 import {
-  Language, sequelize,
+  Activity, Language, LanguageActivity, sequelize,
 } from '../../../models';
 
 // LIST
-export async function getLanguages(req, res) {
+export async function getActivities(req, res) {
   try {
     let { limit, page } = req.query;
-    const { search } = req.query;
+    const { search, languageId } = req.query;
 
     limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
     page = page ? Number(page) : Constant.PAGINATION.PAGE;
@@ -23,24 +23,35 @@ export async function getLanguages(req, res) {
       where: {},
       limit,
       offset,
-      order: [[ 'title', 'ASC']],
+      order: [[ 'order', 'ASC']],
+      include:{ 
+        attributes: [],
+        model: Language,
+        as: 'languages',
+        where: {},
+        through: { attributes: [] },
+        required: true,
+      },
     };
 
     if (search) {
       queryParams.where[Op.or] = [
         { title: { [Op.like]: `%${search.trim()}%` } },
-        { code: { [Op.like]: `%${search.trim()}%` } }
       ];
     }
 
-    const languages = await Language.findAndCountAll(queryParams);
+    if (languageId) {
+      queryParams.include.where.id = languageId
+    }
+
+    const activities = await Activity.findAndCountAll(queryParams);
 
     const response = {
-      languages: languages.rows,
+      activities: activities.rows,
       metadata: {
-        totalItems: languages.count,
+        totalItems: activities.count,
         currentPage: page,
-        totalPages: Math.ceil(languages.count / limit),
+        totalPages: Math.ceil(activities.count / limit),
       },
     };
 
