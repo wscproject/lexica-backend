@@ -39,12 +39,15 @@ export async function startContributionConnect(req, res) {
       where: {
         userId: loggedInUser.id,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
-        activityType: Constant.ACTIVITY.CONNECT,
       },
       transaction,
     });
     
     if (ongoingContribution) {
+      if (ongoingContribution.activityType !== Constant.ACTIVITY.CONNECT) {
+        throw Status.ERROR.PENDING_ACTIVITY;
+      }
+
       // check existing contribution language
       const existingLanguage = await Language.findOne({
         where: {
@@ -140,6 +143,7 @@ export async function startContributionConnect(req, res) {
             required: true,
           },
         ],
+        transaction,
       });
 
       if (!languageActivity) {
@@ -293,7 +297,7 @@ export async function updateContributionConnectDetail(req, res) {
       include: {
         model: Contribution,
         as: 'contribution',
-        require: true,
+        required: true,
         where: {
           externalUserId: loggedInUser.externalId,
           status: Constant.CONTRIBUTION_STATUS.PENDING
@@ -339,45 +343,6 @@ export async function updateContributionConnectDetail(req, res) {
   }
 }
 
-export async function endContributionConnect(req, res) {
-  const transaction = await sequelize.transaction();
-  try {
-    const { loggedInUser } = req;
-
-    // get ongoing contribution
-    const ongoingContribution = await Contribution.findOne({
-      where: {
-        userId: loggedInUser.id,
-        status: Constant.CONTRIBUTION_STATUS.PENDING,
-        activityType: Constant.ACTIVITY.CONNECT,
-      },
-      transaction,
-    });
-    
-    if (!ongoingContribution) {
-      throw Status.ERROR.ON_GOING_CONTRIBUTION_NOT_FOUND;
-    }
-
-    await ContributionConnectDetail.destroy({
-      where: {
-        contributionId: ongoingContribution.id,
-        status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED],
-      },
-      transaction,
-    });
-
-    await ongoingContribution.update({
-      status: Constant.CONTRIBUTION_STATUS.COMPLETED,
-    }, { transaction });
-
-    await transaction.commit();
-    return responseSuccess(res, ongoingContribution);
-  } catch (err) {
-    await transaction.rollback();
-    return responseError(res, err);
-  }
-}
-
 export async function startContributionScript(req, res) {
   const transaction = await sequelize.transaction();
   try {
@@ -392,12 +357,14 @@ export async function startContributionScript(req, res) {
       where: {
         userId: loggedInUser.id,
         status: Constant.CONTRIBUTION_STATUS.PENDING,
-        activityType: Constant.ACTIVITY.SCRIPT,
       },
       transaction,
     });
     
     if (ongoingContribution) {
+      if (ongoingContribution.activityType !== Constant.ACTIVITY.SCRIPT) {
+        throw Status.ERROR.PENDING_ACTIVITY;
+      }
       // check existing contribution language
       const existingLanguage = await Language.findOne({
         attributes: ['id', 'code', 'externalId', 'title'],
@@ -509,6 +476,7 @@ export async function startContributionScript(req, res) {
             required: true,
           },
         ],
+        transaction,
       });
 
       if (!languageActivity) {
@@ -606,7 +574,7 @@ export async function startContributionScript(req, res) {
               externalLexemeId: lexemeData.lLabel.value,
               externalLanguageId: existingLanguage.externalId,
               externalCategoryId: lexemeData.categoryQID.value,
-              languageVariantCode: existingLanguage.languageVariant.code,
+              languageVariantCode: existingLanguage.languageVariant.codePreview,
               language: existingLanguage,
               lemma: lexemeData.lemma.value,
               category: lexemeData.categoryLabel.value,
@@ -664,7 +632,7 @@ export async function updateContributionScriptDetail(req, res) {
       include: {
         model: Contribution,
         as: 'contribution',
-        require: true,
+        required: true,
         where: {
           userId: loggedInUser.id,
           status: Constant.CONTRIBUTION_STATUS.PENDING
@@ -685,7 +653,7 @@ export async function updateContributionScriptDetail(req, res) {
         accessToken: loggedInUser.wikiAccessToken,
         lexemeId: contributionScriptDetail.externalLexemeId,
         variantCode: contributionScriptDetail.languageVariantCode,
-        lemma
+        lemma,
       });
 
       status = Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED;
@@ -702,6 +670,54 @@ export async function updateContributionScriptDetail(req, res) {
 
     await transaction.commit();
     return responseSuccess(res, contributionScriptDetail);
+  } catch (err) {
+    await transaction.rollback();
+    return responseError(res, err);
+  }
+}
+
+export async function endContribution(req, res) {
+  const transaction = await sequelize.transaction();
+  try {
+    const { loggedInUser } = req;
+
+    // get ongoing contribution
+    const ongoingContribution = await Contribution.findOne({
+      where: {
+        userId: loggedInUser.id,
+        status: Constant.CONTRIBUTION_STATUS.PENDING,
+      },
+      transaction,
+    });
+    
+    if (!ongoingContribution) {
+      throw Status.ERROR.ON_GOING_CONTRIBUTION_NOT_FOUND;
+    }
+
+    if (ongoingContribution.activityType === Constant.ACTIVITY.CONNECT) {
+      await ContributionConnectDetail.destroy({
+        where: {
+          contributionId: ongoingContribution.id,
+          status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED],
+        },
+        transaction,
+      });
+    } else if (ongoingContribution.activityType === Constant.ACTIVITY.SCRIPT) {
+      await ContributionScriptDetail.destroy({
+        where: {
+          contributionId: ongoingContribution.id,
+          status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED],
+        },
+        transaction,
+      });
+    }    
+
+    await ongoingContribution.update({
+      status: Constant.CONTRIBUTION_STATUS.COMPLETED,
+    }, { transaction });
+
+    await transaction.commit();
+    return responseSuccess(res, ongoingContribution);
   } catch (err) {
     await transaction.rollback();
     return responseError(res, err);
