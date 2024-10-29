@@ -372,7 +372,7 @@ export async function startContributionScript(req, res) {
           externalId: ongoingContribution.externalLanguageId,
         },
         include: { 
-          attributes: ['id', 'code', 'codePreview', 'title'],
+          attributes: ['id', 'code', 'codePreview', 'title', 'isRtl'],
           model: LanguageVariant,
           as: 'languageVariant',
           required: true,
@@ -443,7 +443,7 @@ export async function startContributionScript(req, res) {
           code: languageCode,
         },
         include: { 
-          attributes: ['id', 'code', 'codePreview', 'title'],
+          attributes: ['id', 'code', 'codePreview', 'title', 'isRtl'],
           model: LanguageVariant,
           as: 'languageVariant',
           required: true,

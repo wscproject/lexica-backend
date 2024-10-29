@@ -30,6 +30,12 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    isRtl: {
+      field: 'is_rtl',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     createdAt: {
       field: 'created_at',
       type: Sequelize.DATE,
