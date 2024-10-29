@@ -69,7 +69,7 @@ export async function updateUserPreference(req, res) {
     });
 
     await transaction.commit();
-    return responseSuccess(res, { ...loggedInUser.id, ...updateUserPreference});
+    return responseSuccess(res, { id: loggedInUser.id, ...updateUserPreference});
   } catch (err) {
     await transaction.rollback();
     return responseError(res, err);
