@@ -18,7 +18,7 @@ export async function searchEntities({ search = '', language = Constant.DISPLAY_
       continue: offset,
   };
   
-  const response = await Get({ url: Config.wiki.wikidataUrl, params });
+  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
 
   return response;
 };
@@ -33,7 +33,7 @@ export async function getEntityDetail({ entityId, language = Constant.DISPLAY_LA
       uselang
   };
   
-  const response = await Get({ url: Config.wiki.wikidataUrl, params });
+  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
   if (response.error) {
     throw Status.ERROR.ENTITY_NOT_FOUND(entityId);
   }
@@ -52,7 +52,7 @@ export async function getCsrfToken({ accessToken }) {
     Authorization: `Bearer ${accessToken}`,
   }
 
-  const response = await Get({ url: Config.wiki.wikidataUrl, params, headers });
+  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params, headers });
   if (response.error) {
     throw Status.ERROR.FAILED_GET_CSRF_TOKEN;
   }
@@ -92,7 +92,7 @@ export async function addItemToLexemeSense({ accessToken, senseId, itemId, csrfT
     Authorization: `Bearer ${accessToken}`,
   }
 
-  const response = await Post({ url: Config.wiki.wikidataUrl, data: qs.stringify(body), headers });
+  const response = await Post({ url: `${Config.wiki.wikidataUrl}/w/api.php`, data: qs.stringify(body), headers });
   if (response.errors) {
     throw Status.ERROR.FAILED_UPDATE_SENSE_IN_WIKI;
   }
