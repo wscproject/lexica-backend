@@ -106,7 +106,7 @@ export async function addLemmaToLexeme({ accessToken, lexemeId, variantCode, csr
       [variantCode]: {
         value: lemma,
         language: variantCode
-      }
+      },
     },
   };
 
@@ -124,7 +124,7 @@ export async function addLemmaToLexeme({ accessToken, lexemeId, variantCode, csr
     Authorization: `Bearer ${accessToken}`,
   }
 
-  const response = await Post({ url: Config.wiki.wikidataUrl, data: qs.stringify(body), headers });
+  const response = await Post({ url: `${Config.wiki.wikidataUrl}/w/api.php`, data: qs.stringify(body), headers });
   if (response.errors) {
     throw Status.ERROR.FAILED_UPDATE_SENSE_IN_WIKI;
   }
