@@ -16,7 +16,7 @@ export async function login(req, res) {
       displayLanguageCode,
     } = req.body;
 
-    const getAccessTokenUrl = `${Config.wiki.wikimetaUrl}/w/rest.php/oauth2/access_token`;
+    const getAccessTokenUrl = `${Config.wiki.wikidataUrl}/w/rest.php/oauth2/access_token`;
     const getAccessTokenBody = new URLSearchParams({
       grant_type: 'authorization_code',
       code,
@@ -36,7 +36,7 @@ export async function login(req, res) {
       throw Status.ERROR.TOKEN_INVALID;
     }
 
-    const getProfileUrl = `${Config.wiki.wikimetaUrl}/w/api.php`;
+    const getProfileUrl = `${Config.wiki.wikidataUrl}/w/api.php`;
     const getProfileQueryParams = {
       action: 'query',
       meta: 'userinfo',

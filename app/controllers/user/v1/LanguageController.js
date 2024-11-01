@@ -14,17 +14,19 @@ export async function getLanguages(req, res) {
     let { limit, page } = req.query;
     const { search } = req.query;
 
-    limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
-    page = page ? Number(page) : Constant.PAGINATION.PAGE;
-
-    const offset = (page - 1) * limit;
-
     const queryParams = {
       where: {},
-      limit,
-      offset,
       order: [[ 'title', 'ASC']],
     };
+
+    if (limit && page) {
+      limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
+      page = page ? Number(page) : Constant.PAGINATION.PAGE;
+
+      const offset = (page - 1) * limit;
+      queryParams.limit = limit;
+      queryParams.offset = offset;
+    }
 
     if (search) {
       queryParams.where[Op.or] = [
@@ -39,8 +41,8 @@ export async function getLanguages(req, res) {
       languages: languages.rows,
       metadata: {
         totalItems: languages.count,
-        currentPage: page,
-        totalPages: Math.ceil(languages.count / limit),
+        currentPage: limit && page ? page : 1,
+        totalPages: limit && page ? Math.ceil(languages.count / limit) : 1,
       },
     };
 

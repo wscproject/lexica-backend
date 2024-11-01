@@ -67,6 +67,30 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q32238',
+    code: 'dag',
+    title: 'Dagbanli',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q1321',
+    code: 'es',
+    title: 'Español',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q33070',
+    code: 'ban',
+    title: 'Bali',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {

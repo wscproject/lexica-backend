@@ -6,5 +6,6 @@ import { validateToken, validateUser } from '../../../middlewares/user/v1/common
 const router = express.Router();
 
 router.get('/sense/:senseId', validateToken, validateUser, middleware.validateGetLexemeSenseDetail, controller.getLexemeSenseDetail);
+router.get('/:lexemeId', validateToken, validateUser, middleware.validateGetLexemeDetail, controller.getLexemeDetail);
 
 export default router;

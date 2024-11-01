@@ -84,6 +84,10 @@ module.exports = {
       CODE: 500600,
       MESSAGE: 'Activity not found for this language.',
     },
+    PENDING_ACTIVITY: {
+      CODE: 500601,
+      MESSAGE: 'Another pending activity still on progress.',
+    },
 
     // GENERAL ERROR
     SOMETHING_WENT_WRONG: {

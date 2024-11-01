@@ -5,35 +5,47 @@ const uuid = require('uuid').v4;
 const languageActivities = [
   {
     code: 'id',
-    activities: ['Leksem ke Butir']
+    activities: ['connect']
   },
   {
     code: 'ms',
-    activities: ['Leksem ke Butir', 'Aksara non-Latin']
+    activities: ['connect', 'script']
   },
   {
     code: 'bjn',
-    activities: ['Leksem ke Butir']
+    activities: ['connect']
   },
   {
     code: 'de',
-    activities: ['Leksem ke Butir']
+    activities: ['connect']
   },
   {
     code: 'en',
-    activities: ['Leksem ke Butir']
+    activities: ['connect']
   },
   {
     code: 'jv',
-    activities: ['Leksem ke Butir', 'Aksara non-Latin']
+    activities: ['connect', 'script']
   },
   {
     code: 'min',
-    activities: ['Leksem ke Butir']
+    activities: ['connect']
   },
   {
     code: 'su',
-    activities: ['Leksem ke Butir', 'Aksara non-Latin']
+    activities: ['connect', 'script']
+  },
+  {
+    code: 'dag',
+    activities: ['connect']
+  },
+  {
+    code: 'es',
+    activities: ['connect']
+  },
+  {
+    code: 'ban',
+    activities: ['connect', 'script']
   },
 ];
 
@@ -60,9 +72,9 @@ module.exports = {
 
       // Fetch activity IDs by their titles
       const activityRecords = await queryInterface.sequelize.query(
-        `SELECT id, title FROM activities WHERE title IN (:title)`,
+        `SELECT id, type FROM activities WHERE type IN (:type)`,
         {
-          replacements: { title: activities },
+          replacements: { type: activities },
           type: Sequelize.QueryTypes.SELECT
         }
       );
@@ -82,7 +94,7 @@ module.exports = {
         );
 
         if (existingEntry.length > 0) {
-          console.log(`Entry for language ${code} and activity ${activity.title} already exists. Skipping...`);
+          console.log(`Entry for language ${code} and activity ${activity.type} already exists. Skipping...`);
           continue;
         }
 
@@ -97,7 +109,7 @@ module.exports = {
             deleted_at: null
           }
         ]);
-        console.log(`Inserted entry for language ${code} and activity ${activity.title}`);
+        console.log(`Inserted entry for language ${code} and activity ${activity.type}`);
       }
     }
   },
