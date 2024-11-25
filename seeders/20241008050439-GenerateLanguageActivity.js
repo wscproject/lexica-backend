@@ -47,6 +47,10 @@ const languageActivities = [
     code: 'ban',
     activities: ['connect', 'script']
   },
+  {
+    code: 'ru',
+    activities: ['connect']
+  },
 ];
 
 module.exports = {
