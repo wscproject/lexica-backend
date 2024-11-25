@@ -103,6 +103,7 @@ export async function startContributionConnect(req, res) {
               gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
               status: existingContributionConnectDetail.status,
               order: existingContributionConnectDetail.order,
+              image: currentLexeme.images.value ? currentLexeme.images.value.split(', ')[0] : '',
             });
           }
         }
@@ -243,7 +244,9 @@ export async function startContributionConnect(req, res) {
               externalCategoryId: lexemeData.categoryQID.value,
               lemma: lexemeData.lemma.value,
               category: lexemeData.categoryLabel.value,
+              gloss: lexemeData.gloss ? lexemeData.gloss.value : '',
               status: "pending",
+              image: lexemeData.images.value ? lexemeData.images.value.split(', ')[0] : '',
               order: orderNumber,
             };
 
@@ -411,7 +414,7 @@ export async function startContributionScript(req, res) {
       if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
         const lexemes = queryResponse.results.bindings;
         for (const existingContributionScriptDetail of existingContributionScriptDetails) {
-          const currentLexeme = lexemes.find(lexemeData => lexemeData.lLabel.value === existingContributionScriptDetail.externalLexemeId);
+          const currentLexeme = lexemes.find(lexemeData => lexemeData.lexemeLabel.value === existingContributionScriptDetail.externalLexemeId);
 
           // set lexeme detail
           if (currentLexeme) {
@@ -419,7 +422,7 @@ export async function startContributionScript(req, res) {
               id: existingContributionScriptDetail.id,
               contributionId: ongoingContribution.id,
               languageVariantId: existingContributionScriptDetail.languageVariantId,
-              externalLexemeId: currentLexeme.lLabel.value,
+              externalLexemeId: currentLexeme.lexemeLabel.value,
               externalLanguageId: existingContributionScriptDetail.externalLanguageId,
               externalCategoryId: currentLexeme.categoryQID.value,
               languageVariantCode: existingContributionScriptDetail.languageVariantCode,
@@ -429,6 +432,7 @@ export async function startContributionScript(req, res) {
               gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
               status: existingContributionScriptDetail.status,
               order: existingContributionScriptDetail.order,
+              image: currentLexeme.images.value ? currentLexeme.images.value.split(', ')[0] : '',
             });
           }
         }
@@ -541,7 +545,7 @@ export async function startContributionScript(req, res) {
           for (const lexemeData of randomLexeme) {
             const existingLexemeContributionScriptDetail = await ContributionScriptDetail.findOne({
               where: {
-                externalLexemeId: lexemeData.lLabel.value,
+                externalLexemeId: lexemeData.lexemeLabel.value,
                 // [Op.or]: [
                 //   { status: Constant.CONTRIBUTION_DETAIL_STATUS.PENDING },
                 //   { 
@@ -571,7 +575,7 @@ export async function startContributionScript(req, res) {
             const contributionScriptDetailData = {
               contributionId: createdContribution.id,
               languageVariantId: existingLanguage.languageVariant.id,
-              externalLexemeId: lexemeData.lLabel.value,
+              externalLexemeId: lexemeData.lexemeLabel.value,
               externalLanguageId: existingLanguage.externalId,
               externalCategoryId: lexemeData.categoryQID.value,
               languageVariantCode: existingLanguage.languageVariant.codePreview,
@@ -581,6 +585,7 @@ export async function startContributionScript(req, res) {
               status: "pending",
               gloss: lexemeData.gloss ? lexemeData.gloss.value : '',
               order: orderNumber,
+              image: lexemeData.images.value ? lexemeData.images.value.split(', ')[0] : '',
             }
             const createdContributionScriptDetail = await ContributionScriptDetail.create(contributionScriptDetailData, { transaction });
 
