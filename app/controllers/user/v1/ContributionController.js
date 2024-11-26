@@ -243,6 +243,7 @@ export async function startContributionConnect(req, res) {
               externalCategoryId: lexemeData.categoryQID.value,
               lemma: lexemeData.lemma.value,
               category: lexemeData.categoryLabel.value,
+              gloss: lexemeData.gloss ? lexemeData.gloss.value : '',
               status: "pending",
               order: orderNumber,
             };
