@@ -83,7 +83,7 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
   WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory ?category;
-      wikibase:lemma ?lemma.
+      wikibase:lemma ?lemmaString.
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
       OPTIONAL { ?sense skos:definition ?glossString. }
@@ -120,7 +120,7 @@ export async function generateGetScriptLexemeQuery ({ languageId, include = '', 
   WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory ?category;
-      wikibase:lemma ?lemma.
+      wikibase:lemma ?lemmaString.
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
       OPTIONAL { ?sense skos:definition ?glossString. }

@@ -6,6 +6,7 @@ import Entity from './entity.route';
 import Language from './language.route';
 import User from './user.route';
 import Activity from './activity.route';
+import Wikidata from './wikidata.route';
 
 const router = express.Router();
 router.use('/auth', Auth);
@@ -15,6 +16,7 @@ router.use('/entites', Entity);
 router.use('/languages', Language);
 router.use('/users', User);
 router.use('/activities', Activity);
+router.use('/wikidata', Wikidata);
 
 
 module.exports = router;

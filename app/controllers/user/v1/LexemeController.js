@@ -56,9 +56,13 @@ export async function getLexemeDetail(req, res) {
     const lexemeCategory = await getEntityDetail({ entityId: lexemeCategoryId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
     lexemeResponse.category = lexemeCategory['entities'][lexemeCategoryId]['labels'][loggedInUser.displayLanguageCode] ? lexemeCategory['entities'][lexemeCategoryId]['labels'][loggedInUser.displayLanguageCode]['value'] :  '';
 
+    // set sense number
+    let senseNumber = 1;
     for (const sense of lexemeDetail['entities'][lexemeId]['senses']) {
       const statements = {
-        gloss: '',
+        externalLexemeSenseId: sense['id'],
+        senseNumber,
+        gloss: sense['glosses'][loggedInUser.languageCode] ? sense['glosses'][loggedInUser.languageCode]['value'] : '',
         otherGlosses: [],
         images: null,
         itemForThisSense: null,
@@ -66,26 +70,11 @@ export async function getLexemeDetail(req, res) {
         fieldOfUsage: null,
       }
 
-      // Set glosses
-      if (sense['glosses']) {
-        // Extract the values from the object
-        const glossValues = Object.values(sense['glosses']).map(gloss => gloss.value);
-
-        // Join all gloss
-        gloss.push(glossValues);
-
-        // Join the values with " / " separator
-        statements.gloss = glossValues.join(', ');
-      }
-
-      // get other gloss in different language than contribution language
-      for (const [key, value] of Object.entries(sense['glosses'])) {
-        if (key !== loggedInUser.languageCode && key === Constant.DISPLAY_LANGUAGE.EN.ISO) {
-          statements.otherGlosses.push({
-            language: value.language,
-            value: value.value
-          });
-        }
+      if (sense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]) {
+        statements.otherGlosses.push({
+          language: sense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['language'],
+          value: sense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value']
+        });
       }
 
       // get images
@@ -178,6 +167,7 @@ export async function getLexemeDetail(req, res) {
       }
 
       lexemeResponse.senses.push(statements);
+      senseNumber++;
     }
 
     // Join array of gloss to string
@@ -218,7 +208,7 @@ export async function getLexemeSenseDetail(req, res) {
       hasCharacteristics: null,
       usageExamples: null,
       combinesLexemes: null,
-      sense: {},
+      sense: null,
       otherSenses: [],
     };
 
@@ -301,26 +291,38 @@ export async function getLexemeSenseDetail(req, res) {
       }
     }
 
+    // set sense number
+    let senseNumber = 1;
     for (const lexemeSense of lexemeDetail['entities'][lexemeId]['senses']) {
       // get gloss in user contribution language
       const gloss = lexemeSense['glosses'] && lexemeSense['glosses'][loggedInUser.languageCode] ? lexemeSense['glosses'][loggedInUser.languageCode]['value'] : '';
-      
-      // get other gloss in different language than contribution language
-      const otherGlosses = [];
-      for (const [key, value] of Object.entries(lexemeSense['glosses'])) {
-        if (key !== loggedInUser.languageCode && key === Constant.DISPLAY_LANGUAGE.EN.ISO ) {
-          otherGlosses.push({
-            language: value.language,
-            value: value.value
-          });
+
+      // get images
+      let images = null;
+      if (lexemeSense['claims'] && lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
+        const tempImages = [];
+        for (const imageDetail of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
+          if (imageDetail['mainsnak']['datavalue']['value']) {
+            tempImages.push({
+              value: imageDetail['mainsnak']['datavalue']['value'],
+              url: `https://commons.wikimedia.org/wiki/Special:FilePath/${imageDetail['mainsnak']['datavalue']['value']}`,
+            });
+          }
+        }
+  
+        if (tempImages.length > 0) {
+          images = {
+            property: Constant.WIKIDATA_PROPERTY_CODE.IMAGE,
+            data: tempImages,
+          }
         }
       }
 
       if (lexemeSense['id'] === senseId) {
         lexemeResponse.sense = {
           gloss,
-          otherGlosses,
-          images: null,
+          otherGlosses: [],
+          images,
           languageStyle: null,
           fieldOfUsage: null,
           locationOfSenseUsage: null,
@@ -330,23 +332,13 @@ export async function getLexemeSenseDetail(req, res) {
           glossQuotes: null,
         };
 
-        // get images
-        if (lexemeSense['claims'] && lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
-          const images = [];
-          for (const imageDetail of lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
-            if (imageDetail['mainsnak']['datavalue']['value']) {
-              images.push({
-                value: imageDetail['mainsnak']['datavalue']['value'],
-                url: `https://commons.wikimedia.org/wiki/Special:FilePath/${imageDetail['mainsnak']['datavalue']['value']}`,
-              });
-            }
-          }
-    
-          if (images.length > 0) {
-            lexemeResponse.sense.images = {
-              property: Constant.WIKIDATA_PROPERTY_CODE.IMAGE,
-              data: images,
-            }
+        // get other gloss in different language than contribution language
+        for (const [key, value] of Object.entries(lexemeSense['glosses'])) {
+          if (key !== loggedInUser.languageCode) {
+            lexemeResponse.sense.otherGlosses.push({
+              language: value.language,
+              value: value.value
+            });
           }
         }
 
@@ -509,10 +501,20 @@ export async function getLexemeSenseDetail(req, res) {
         }
       } else {
         const otherSense = {
+          externalLexemeSenseId: lexemeSense['id'],
+          senseNumber,
           gloss,
-          otherGlosses,
+          otherGlosses: [],
+          images,
           itemForThisSense: null,
         };
+
+        if (lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]) {
+          otherSense.otherGlosses.push({
+            language: lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['language'],
+            value: lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value']
+          });
+        }
   
         if (lexemeSense['claims'] && lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.ITEM_FOR_THIS_SENSE]) {
           const itemForThisSense = [];
@@ -538,6 +540,7 @@ export async function getLexemeSenseDetail(req, res) {
   
         lexemeResponse.otherSenses.push(otherSense);
       }
+      senseNumber++;
     }
 
     return responseSuccess(res, lexemeResponse);
