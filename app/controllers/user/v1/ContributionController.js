@@ -409,7 +409,7 @@ export async function startContributionScript(req, res) {
       includeLexemeString = existingContributionScriptDetailsMapping.join(", ");
 
       // get lexemes
-      const query = await generateGetScriptLexemeQuery({ languageId: existingLanguage.externalId, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+      const query = await generateGetScriptLexemeQuery({ languageId: existingLanguage.externalId, languageCode: existingLanguage.code, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
       const queryResponse = await simpleQuery(query);
       if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
         const lexemes = queryResponse.results.bindings;
@@ -536,7 +536,7 @@ export async function startContributionScript(req, res) {
       }
 
       // get random lexemes
-      const query = await generateRandomScriptLexemeQuery({ variantCode: existingLanguage.languageVariant.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+      const query = await generateRandomScriptLexemeQuery({ variantCode: existingLanguage.languageVariant.code, languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
       while (existingLexeme) {
         let orderNumber = 1;
         const queryResponse = await simpleQuery(query);

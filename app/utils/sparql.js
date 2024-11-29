@@ -34,7 +34,7 @@ export async function generateRandomConnectLexemeSenseQuery ({ languageId, langu
   GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
   ORDER BY ?uuid
   LIMIT ${Config.activity.totalConnectLexemeSense}
-  #${generatedUUID}`
+  #${generatedUUID}`;
 
   return query;
 }
@@ -61,22 +61,21 @@ export async function generateGetConnectLexemeSenseQuery ({ languageId, language
       bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]".
     }
   }
-  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID`
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID`;
 
   return query;
 }
 
-export async function generateRandomScriptLexemeQuery ({ languageId, variantCode, exclude = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
+export async function generateRandomScriptLexemeQuery ({ languageId, variantCode, languageCode, exclude = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
   // generate uuid for query
   const generatedUUID = uuidv4();
 
   // generate exclude data query
-  const excludeQuery = exclude ? `FILTER(?l NOT IN (${exclude}))` : '';
+  const excludeQuery = exclude ? `FILTER(?lexeme NOT IN (${exclude}))` : '';
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lexemeLabel ?categoryLabel ?categoryQID
-    (GROUP_CONCAT(DISTINCT ?glossString; SEPARATOR = "; ") AS ?gloss)
+  SELECT ?lexemeLabel ?categoryLabel ?categoryQID ?gloss
     (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
     (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images) 
     (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
@@ -86,7 +85,7 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
       wikibase:lemma ?lemmaString.
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
-      OPTIONAL { ?sense skos:definition ?glossString. }
+      OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
       OPTIONAL { ?sense wdt:P18 ?imageString. }
     }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
@@ -99,21 +98,20 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
     BIND(UUID() AS ?uuidString)
   }
   
-  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID
+  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID ?gloss
   ORDER BY ?uuid
   LIMIT ${Config.activity.totalScriptLexeme}
-  #${generatedUUID}`
+  #${generatedUUID}`;
 
   return query;
 }
 
-export async function generateGetScriptLexemeQuery ({ languageId, include = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
+export async function generateGetScriptLexemeQuery ({ languageId, languageCode, include = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
   // generate exclude data query
-  const includeQuery = include ? `FILTER(?l IN (${include}))` : '';
+  const includeQuery = include ? `FILTER(?lexeme IN (${include}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?lexemeLabel ?categoryLabel ?categoryQID 
-    (GROUP_CONCAT(DISTINCT ?glossString; SEPARATOR = "; ") AS ?gloss)
+  const query = `SELECT ?lexemeLabel ?categoryLabel ?categoryQID ?gloss
     (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
     (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images) 
     (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
@@ -123,7 +121,7 @@ export async function generateGetScriptLexemeQuery ({ languageId, include = '', 
       wikibase:lemma ?lemmaString.
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
-      OPTIONAL { ?sense skos:definition ?glossString. }
+      OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
       OPTIONAL { ?sense wdt:P18 ?imageString. }
     }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
@@ -131,8 +129,8 @@ export async function generateGetScriptLexemeQuery ({ languageId, include = '', 
     SERVICE wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
     BIND(UUID() AS ?uuidString)
   }
-  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID
-  ORDER BY ?uuid`
+  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID ?gloss
+  ORDER BY ?uuid`;
 
   return query;
 }
