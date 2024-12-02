@@ -509,7 +509,7 @@ export async function getLexemeSenseDetail(req, res) {
           itemForThisSense: null,
         };
 
-        if (lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]) {
+        if (lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO] && loggedInUser.languageCode !== Constant.DISPLAY_LANGUAGE.EN.ISO) {
           otherSense.otherGlosses.push({
             language: lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['language'],
             value: lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value']
