@@ -11,13 +11,18 @@ export async function generateRandomConnectLexemeSenseQuery ({ languageId, langu
   const excludeQuery = exclude ? `FILTER(?sense NOT IN (${exclude}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?senseLabel ?lexemeLabel (GROUP_CONCAT(DISTINCT ?lemmaString; separator=" / ") AS ?lemma) ?categoryLabel ?gloss ?categoryQID (GROUP_CONCAT(DISTINCT ?uuidString; separator=" / ") AS ?uuid) WHERE {
+  const query = `SELECT ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
+    (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma) 
+    (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
+    (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images)
+  WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
       wikibase:lemma ?lemmaString;
       ontolex:sense ?sense.
     OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
+    OPTIONAL { ?sense wdt:P18 ?imageString. }
     MINUS { ?sense wdt:P5137 ?senseItem. }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${excludeQuery}
@@ -26,10 +31,10 @@ export async function generateRandomConnectLexemeSenseQuery ({ languageId, langu
     }
     BIND(UUID() AS ?uuidString)
   }
-  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID ?uuid
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
   ORDER BY ?uuid
   LIMIT ${Config.activity.totalConnectLexemeSense}
-  #${generatedUUID}`
+  #${generatedUUID}`;
 
   return query;
 }
@@ -39,45 +44,53 @@ export async function generateGetConnectLexemeSenseQuery ({ languageId, language
   const includeQuery = include ? `FILTER(?sense IN (${include}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?senseLabel ?lexemeLabel (GROUP_CONCAT(DISTINCT ?lemmaString; separator=" / ") AS ?lemma) ?categoryLabel ?gloss ?categoryQID WHERE {
+  const query = `SELECT ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
+    (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
+    (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images)
+  WHERE {
     ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory wd:Q1084;
       wikibase:lexicalCategory ?category;
       wikibase:lemma ?lemmaString;
       ontolex:sense ?sense.
     OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
+    OPTIONAL { ?sense wdt:P18 ?imageString. }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${includeQuery}
     SERVICE wikibase:label { 
       bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]".
     }
   }
-  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID`
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID`;
 
   return query;
 }
 
-export async function generateRandomScriptLexemeQuery ({ languageId, variantCode, exclude = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
+export async function generateRandomScriptLexemeQuery ({ languageId, variantCode, languageCode, exclude = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
   // generate uuid for query
   const generatedUUID = uuidv4();
 
   // generate exclude data query
-  const excludeQuery = exclude ? `FILTER(?l NOT IN (${exclude}))` : '';
+  const excludeQuery = exclude ? `FILTER(?lexeme NOT IN (${exclude}))` : '';
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lLabel ?categoryLabel ?lemma ?categoryQID (GROUP_CONCAT(DISTINCT ?glossString; separator=", ") AS ?gloss) (GROUP_CONCAT(DISTINCT ?uuidString; separator=" / ") AS ?uuid) WHERE {
-    ?l rdf:type ontolex:LexicalEntry;
-      dct:language wd:${languageId};
+  SELECT ?lexemeLabel ?categoryLabel ?categoryQID ?gloss
+    (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
+    (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images) 
+    (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
+  WHERE {
+    ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory ?category;
-      wikibase:lemma ?lemma.
+      wikibase:lemma ?lemmaString.
     OPTIONAL {
-      ?l ontolex:sense ?sense.
-      ?sense skos:definition ?glossString.
+      ?lexeme ontolex:sense ?sense.
+      OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
+      OPTIONAL { ?sense wdt:P18 ?imageString. }
     }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     FILTER(NOT EXISTS {
-      ?l wikibase:lemma ?variant.
+      ?lexeme wikibase:lemma ?variant.
       FILTER((LANG(?variant)) = "${variantCode}")
     })
     ${excludeQuery}
@@ -85,35 +98,39 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
     BIND(UUID() AS ?uuidString)
   }
   
-  GROUP BY ?lLabel ?categoryLabel ?lemma ?categoryQID ?gloss ?uuid
+  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID ?gloss
   ORDER BY ?uuid
   LIMIT ${Config.activity.totalScriptLexeme}
-  #${generatedUUID}`
+  #${generatedUUID}`;
 
   return query;
 }
 
-export async function generateGetScriptLexemeQuery ({ languageId, include = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
+export async function generateGetScriptLexemeQuery ({ languageId, languageCode, include = '', displayLanguage = Constant.DISPLAY_LANGUAGE.EN.ISO }) {
   // generate exclude data query
-  const includeQuery = include ? `FILTER(?l IN (${include}))` : '';
+  const includeQuery = include ? `FILTER(?lexeme IN (${include}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?lLabel ?categoryLabel ?lemma ?categoryQID (GROUP_CONCAT(DISTINCT ?glossString; separator=", ") AS ?gloss) (GROUP_CONCAT(DISTINCT ?uuidString; separator=" / ") AS ?uuid) WHERE {
-    ?l rdf:type ontolex:LexicalEntry;
-      dct:language wd:${languageId};
+  const query = `SELECT ?lexemeLabel ?categoryLabel ?categoryQID ?gloss
+    (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
+    (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images) 
+    (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
+  WHERE {
+    ?lexeme dct:language wd:${languageId};
       wikibase:lexicalCategory ?category;
-      wikibase:lemma ?lemma.
+      wikibase:lemma ?lemmaString.
     OPTIONAL {
-      ?l ontolex:sense ?sense.
-      ?sense skos:definition ?glossString.
+      ?lexeme ontolex:sense ?sense.
+      OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
+      OPTIONAL { ?sense wdt:P18 ?imageString. }
     }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${includeQuery}
     SERVICE wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
     BIND(UUID() AS ?uuidString)
   }
-  GROUP BY ?lLabel ?categoryLabel ?lemma ?categoryQID ?gloss ?uuid
-  ORDER BY ?uuid`
+  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID ?gloss
+  ORDER BY ?uuid`;
 
   return query;
 }

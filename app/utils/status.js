@@ -89,6 +89,12 @@ module.exports = {
       MESSAGE: 'Another pending activity still on progress.',
     },
 
+    // WIKIDATA LANGUAGE
+    WIKIDATA_LANGUAGE_NOT_FOUND: {
+      CODE: 500700,
+      MESSAGE: 'Wikidata language not found.',
+    },
+
     // GENERAL ERROR
     SOMETHING_WENT_WRONG: {
       CODE: 60001,

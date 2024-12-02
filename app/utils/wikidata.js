@@ -60,6 +60,22 @@ export async function getCsrfToken({ accessToken }) {
   return response.query.tokens.csrftoken;
 }
 
+export async function getLanguageList() {
+  const params = {
+    action: 'query',
+    meta: 'wbcontentlanguages',
+    wbclcontext: 'monolingualtext',
+    wbclprop: 'code|autonym|name',
+    format: 'json',
+  };
+
+  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
+  if (response.error) {
+    throw Status.ERROR.WIKIDATA_LANGUAGE_NOT_FOUND;
+  }
+
+  return response.query.wbcontentlanguages;
+}
 
 export async function addItemToLexemeSense({ accessToken, senseId, itemId, csrfToken, ignoreDuplicate = true }){
   const generatedUUID = uuidv4();
