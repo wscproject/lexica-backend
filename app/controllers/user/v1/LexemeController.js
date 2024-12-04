@@ -70,10 +70,21 @@ export async function getLexemeDetail(req, res) {
         fieldOfUsage: null,
       }
 
+      if (sense['glosses'][loggedInUser.languageCode]) {
+        gloss.push(sense['glosses'][loggedInUser.languageCode]['value']);
+      }
+
       if (sense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]) {
         statements.otherGlosses.push({
           language: sense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['language'],
           value: sense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value']
+        });
+      }
+
+      if (sense['glosses'][Constant.DISPLAY_LANGUAGE.ID.ISO]) {
+        statements.otherGlosses.push({
+          language: sense['glosses'][Constant.DISPLAY_LANGUAGE.ID.ISO]['language'],
+          value: sense['glosses'][Constant.DISPLAY_LANGUAGE.ID.ISO]['value']
         });
       }
 
@@ -171,7 +182,7 @@ export async function getLexemeDetail(req, res) {
     }
 
     // Join array of gloss to string
-    lexemeResponse.gloss = gloss.flat().join(', ');
+    lexemeResponse.gloss = gloss.flat().join('; ');
 
     return responseSuccess(res, lexemeResponse);
   } catch (err) {

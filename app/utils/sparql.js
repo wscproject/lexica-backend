@@ -75,7 +75,8 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lexemeLabel ?categoryLabel ?categoryQID ?gloss
+  SELECT ?lexemeLabel ?categoryLabel ?categoryQID
+    (GROUP_CONCAT(DISTINCT ?glossString; SEPARATOR = " ; ") AS ?gloss)
     (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
     (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images) 
     (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
@@ -85,7 +86,7 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
       wikibase:lemma ?lemmaString.
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
-      OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
+      OPTIONAL { ?sense skos:definition ?glossString. FILTER(LANG(?glossString) = "${languageCode}")}
       OPTIONAL { ?sense wdt:P18 ?imageString. }
     }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
@@ -98,7 +99,7 @@ export async function generateRandomScriptLexemeQuery ({ languageId, variantCode
     BIND(UUID() AS ?uuidString)
   }
   
-  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID ?gloss
+  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID
   ORDER BY ?uuid
   LIMIT ${Config.activity.totalScriptLexeme}
   #${generatedUUID}`;
@@ -111,7 +112,8 @@ export async function generateGetScriptLexemeQuery ({ languageId, languageCode, 
   const includeQuery = include ? `FILTER(?lexeme IN (${include}))` : '';
   
   // generate get random lexeme query
-  const query = `SELECT ?lexemeLabel ?categoryLabel ?categoryQID ?gloss
+  const query = `SELECT ?lexemeLabel ?categoryLabel ?categoryQID
+    (GROUP_CONCAT(DISTINCT ?glossString; SEPARATOR = " ; ") AS ?gloss)
     (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
     (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images) 
     (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma)
@@ -121,7 +123,7 @@ export async function generateGetScriptLexemeQuery ({ languageId, languageCode, 
       wikibase:lemma ?lemmaString.
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
-      OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
+      OPTIONAL { ?sense skos:definition ?glossString. FILTER(LANG(?glossString) = "${languageCode}")}
       OPTIONAL { ?sense wdt:P18 ?imageString. }
     }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
@@ -129,7 +131,7 @@ export async function generateGetScriptLexemeQuery ({ languageId, languageCode, 
     SERVICE wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
     BIND(UUID() AS ?uuidString)
   }
-  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID ?gloss
+  GROUP BY ?lexemeLabel ?categoryLabel ?lemma ?categoryQID
   ORDER BY ?uuid`;
 
   return query;
