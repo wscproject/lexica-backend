@@ -24,6 +24,10 @@ export async function generateRandomConnectLexemeSenseQuery ({ languageId, langu
     OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     OPTIONAL { ?sense wdt:P18 ?imageString. }
     MINUS { ?sense wdt:P5137 ?senseItem. }
+    MINUS {
+      ?lexeme ontolex:sense ?senseWithItem.
+      ?senseWithItem wdt:P5137|wdt:P6271 [] 
+    }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
     ${excludeQuery}
     SERVICE wikibase:label { 
