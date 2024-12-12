@@ -118,7 +118,10 @@ export async function getLexemeDetail(req, res) {
 
             itemForThisSense.push({
               id: itemForThisSenseData['mainsnak']['datavalue']['value']['id'],
-              value: itemForThisSenseDetail['entities'][itemForThisSenseId]['labels'][loggedInUser.languageCode]['value'] || itemForThisSenseDetail['entities'][itemForThisSenseId]['labels'][loggedInUser.displayLanguageCode]['value'] || itemForThisSenseDetail['entities'][itemForThisSenseId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+              value: itemForThisSenseDetail?.entities?.[itemForThisSenseId]?.labels?.[loggedInUser.languageCode]?.value ||
+              itemForThisSenseDetail?.entities?.[itemForThisSenseId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+              itemForThisSenseDetail?.entities?.[itemForThisSenseId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+              '',
             });
           }
         }
@@ -141,7 +144,10 @@ export async function getLexemeDetail(req, res) {
 
             languageStyle.push({
               id: languageStyleData['mainsnak']['datavalue']['value']['id'],
-              value: languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.languageCode]['value'] || languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.displayLanguageCode]['value'] || languageStyleDetail['entities'][languageStyleId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+              value: languageStyleDetail?.entities?.[languageStyleId]?.labels?.[loggedInUser.languageCode]?.value ||
+              languageStyleDetail?.entities?.[languageStyleId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+              languageStyleDetail?.entities?.[languageStyleId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+              ''
             });
           }
         }
@@ -164,7 +170,10 @@ export async function getLexemeDetail(req, res) {
   
             fieldOfUsage.push({
               id: fieldOfUsageData['mainsnak']['datavalue']['value']['id'],
-              value: fieldOfUsageDetail['entities'][fieldOfUsageId]['labels'][loggedInUser.languageCode]['value'] || fieldOfUsageDetail['entities'][fieldOfUsageId]['labels'][loggedInUser.displayLanguageCode]['value'] || fieldOfUsageDetail['entities'][fieldOfUsageId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+              value: fieldOfUsageDetail?.entities?.[fieldOfUsageId]?.labels?.[loggedInUser.languageCode]?.value ||
+              fieldOfUsageDetail?.entities?.[fieldOfUsageId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+              fieldOfUsageDetail?.entities?.[itemForThisSenseId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+              '',
             });
           }
         }
@@ -238,7 +247,10 @@ export async function getLexemeSenseDetail(req, res) {
 
           hasCharacteristics.push({
             id: hasCharacteristicsData['mainsnak']['datavalue']['value']['id'],
-            value: hasCharacteristicsDetail['entities'][hasCharacteristicsId]['labels'][loggedInUser.languageCode]['value'] || hasCharacteristicsDetail['entities'][hasCharacteristicsId]['labels'][loggedInUser.displayLanguageCode]['value'] || hasCharacteristicsDetail['entities'][hasCharacteristicsId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+            value: hasCharacteristicsDetail?.entities?.[hasCharacteristicsId]?.labels?.[loggedInUser.languageCode]?.value ||
+            hasCharacteristicsDetail?.entities?.[hasCharacteristicsId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+            hasCharacteristicsDetail?.entities?.[hasCharacteristicsId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+            '',
           });
         }
       }
@@ -363,7 +375,10 @@ export async function getLexemeSenseDetail(req, res) {
     
               languageStyle.push({
                 id: languageStyleData['mainsnak']['datavalue']['value']['id'],
-                value: languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.languageCode]['value'] || languageStyleDetail['entities'][languageStyleId]['labels'][loggedInUser.displayLanguageCode]['value'] || languageStyleDetail['entities'][languageStyleId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+                value: languageStyleDetail?.entities?.[languageStyleId]?.labels?.[loggedInUser.languageCode]?.value ||
+                languageStyleDetail?.entities?.[languageStyleId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+                languageStyleDetail?.entities?.[languageStyleId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+                '',
               });
             }
           }
@@ -386,7 +401,10 @@ export async function getLexemeSenseDetail(req, res) {
     
               fieldOfUsage.push({
                 id: fieldOfUsageData['mainsnak']['datavalue']['value']['id'],
-                value: fieldOfUsageDetail['entities'][fieldOfUsageId]['labels'][loggedInUser.languageCode]['value'] || fieldOfUsageDetail['entities'][fieldOfUsageId]['labels'][loggedInUser.displayLanguageCode]['value'] || fieldOfUsageDetail['entities'][fieldOfUsageId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+                value: fieldOfUsageDetail?.entities?.[fieldOfUsageId]?.labels?.[loggedInUser.languageCode]?.value ||
+                fieldOfUsageDetail?.entities?.[fieldOfUsageId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+                fieldOfUsageDetail?.entities?.[fieldOfUsageId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+                '',
               });
             }
           }
@@ -409,7 +427,10 @@ export async function getLexemeSenseDetail(req, res) {
     
               locationOfSenseUsage.push({
                 id: locationOfSenseUsageData['mainsnak']['datavalue']['value']['id'],
-                value: locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][loggedInUser.languageCode]['value'] || locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][loggedInUser.displayLanguageCode]['value'] || locationOfSenseUsageDetail['entities'][locationOfSenseUsageId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+                value: locationOfSenseUsageDetail?.entities?.[locationOfSenseUsageId]?.labels?.[loggedInUser.languageCode]?.value ||
+                locationOfSenseUsageDetail?.entities?.[locationOfSenseUsageId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+                locationOfSenseUsageDetail?.entities?.[locationOfSenseUsageId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+                '',
               });
             }
           }
@@ -432,7 +453,10 @@ export async function getLexemeSenseDetail(req, res) {
     
               semanticGender.push({
                 id: semanticGenderData['mainsnak']['datavalue']['value']['id'],
-                value: semanticGenderDetail['entities'][semanticGenderId]['labels'][loggedInUser.languageCode]['value'] || semanticGenderDetail['entities'][semanticGenderId]['labels'][loggedInUser.displayLanguageCode]['value'] || semanticGenderDetail['entities'][semanticGenderId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+                value: semanticGenderDetail?.entities?.[semanticGenderId]?.labels?.[loggedInUser.languageCode]?.value ||
+                semanticGenderDetail?.entities?.[semanticGenderId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+                semanticGenderDetail?.entities?.[semanticGenderId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+                '',
               });
             }
           }
@@ -548,7 +572,10 @@ export async function getLexemeSenseDetail(req, res) {
   
               itemForThisSense.push({
                 id: itemForThisSenseData['mainsnak']['datavalue']['value']['id'],
-                value: itemForThisSenseDetail['entities'][itemForThisSenseId]['labels'][loggedInUser.languageCode]['value'] || itemForThisSenseDetail['entities'][itemForThisSenseId]['labels'][loggedInUser.displayLanguageCode]['value'] || itemForThisSenseDetail['entities'][itemForThisSenseId]['labels'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value'] || '',
+                value: itemForThisSenseDetail?.entities?.[itemForThisSenseId]?.labels?.[loggedInUser.languageCode]?.value ||
+                itemForThisSenseDetail?.entities?.[itemForThisSenseId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+                itemForThisSenseDetail?.entities?.[itemForThisSenseId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value || 
+                '',
               });
             }
           }
