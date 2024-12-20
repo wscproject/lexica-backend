@@ -3,7 +3,7 @@
 /* eslint-disable max-len */
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
-import { searchEntities, getEntityDetail} from '../../../utils/wikidata';
+import { searchEntities, getEntityDetail, searchRecommendationEntities} from '../../../utils/wikidata';
 
 export async function getEntities(req, res) {
   try {
@@ -27,8 +27,8 @@ export async function getEntities(req, res) {
           id: entity.id,
           label: entity.display.label.value,
           description: entity.display.description ? entity.display.description.value : '',
-          image: entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE] ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0]['mainsnak']['datavalue']['value']}` : null,
-          language: loggedInUser.language,
+          image: entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE] ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0]['mainsnak']['datavalue']['value']}` : '',
+          language: loggedInUser.languageCode,
         }
   
         entityResponse.push(temporaryEntity);
@@ -252,6 +252,52 @@ export async function getEntity(req, res) {
     // }
 
     return responseSuccess(res, entityResponse);
+  } catch (err) {
+    console.log(err);
+    return responseError(res, err);
+  }
+}
+
+export async function getRecommendations(req, res) {
+  try {
+    const { loggedInUser } = req;
+    let { limit, page, search } = req.query;
+
+    limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
+    page = page ? Number(page) : Constant.PAGINATION.PAGE;
+    const offset = (page - 1) * limit;
+
+    // search entities
+    const entityResponse = [];
+    const entities = await searchRecommendationEntities({ search, limit, offset, language: loggedInUser.languageCode });
+
+    if (entities?.query?.pages) {
+      for (const entity of entities.query.pages) {
+        const temporaryEntity = {
+          id: entity.title,
+          label: entity.entityterms?.label?.[0] ||
+          entity.cirrusdoc?.[0]?.source?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] ||
+          '',
+          description: entity.entityterms?.description?.[0] ||
+          entity.cirrusdoc?.[0]?.source?.descriptions?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] ||
+          '',
+          image: entity.images?.[0]?.title?.replace("File:", "https://commons.wikimedia.org/wiki/Special:FilePath/") || '',
+          language: loggedInUser.languageCode,
+        }
+  
+        entityResponse.push(temporaryEntity);
+      }
+    }
+
+    const response = {
+      entities: entityResponse,
+      metadata: {
+        limit,
+        currentPage: page,
+      },
+    };
+
+    return responseSuccess(res, response);
   } catch (err) {
     console.log(err);
     return responseError(res, err);

@@ -147,3 +147,28 @@ export async function addLemmaToLexeme({ accessToken, lexemeId, variantCode, csr
   
   return response;
 }
+
+export async function searchRecommendationEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
+  const params = {
+      action: 'query',
+      format: 'json',
+      generator: 'search',
+      converttitles: 1,
+      formatversion: 2,
+      errorformat: 'plaintext',
+      prop: 'entityterms|images|cirrusdoc',
+      wbetterms: 'alias|label|description',
+      wbetlanguage: language,
+      cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}`,
+      // uselang: language,
+      gsrsearch: `${search} -haswbstatement:P31=Q5|P31=Q5633421|P31=Q737498|P31=Q16024164|P31=Q13442814`,
+      gsrlimit: limit,
+      gsroffset: offset,
+      gsrqiprofile: 'classic',
+      gsrinfo: 'totalhits',
+  };
+  
+  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
+
+  return response;
+};
