@@ -275,8 +275,12 @@ export async function getRecommendations(req, res) {
       for (const entity of entities.query.pages) {
         const temporaryEntity = {
           id: entity.title,
-          label: entity.entityterms?.label?.[0] || '',
-          description: entity.entityterms?.description?.[0] || '',
+          label: entity.entityterms?.label?.[0] ||
+          entity.cirrusdoc?.[0]?.source?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] ||
+          '',
+          description: entity.entityterms?.description?.[0] ||
+          entity.cirrusdoc?.[0]?.source?.descriptions?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] ||
+          '',
           image: entity.images?.[0]?.title?.replace("File:", "https://commons.wikimedia.org/wiki/Special:FilePath/") || '',
           language: loggedInUser.languageCode,
         }

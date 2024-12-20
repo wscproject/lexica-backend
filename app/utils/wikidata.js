@@ -147,6 +147,7 @@ export async function addLemmaToLexeme({ accessToken, lexemeId, variantCode, csr
   
   return response;
 }
+
 export async function searchRecommendationEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
   const params = {
       action: 'query',
@@ -154,10 +155,12 @@ export async function searchRecommendationEntities({ search = '', language = Con
       generator: 'search',
       converttitles: 1,
       formatversion: 2,
-      wbetterms: 'alias|label|description',
       errorformat: 'plaintext',
-      uselang: language,
-      prop: 'entityterms|images',
+      prop: 'entityterms|images|cirrusdoc',
+      wbetterms: 'alias|label|description',
+      wbetlanguage: language,
+      cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}`,
+      // uselang: language,
       gsrsearch: `${search} -haswbstatement:P31=Q5`,
       gsrlimit: limit,
       gsroffset: offset,
