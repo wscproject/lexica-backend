@@ -161,7 +161,7 @@ export async function searchRecommendationEntities({ search = '', language = Con
       wbetlanguage: language,
       cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}`,
       // uselang: language,
-      gsrsearch: `${search} -haswbstatement:P31=Q5`,
+      gsrsearch: `${search} -haswbstatement:P31=Q5|P31=Q5633421|P31=Q737498|P31=Q16024164|P31=Q13442814`,
       gsrlimit: limit,
       gsroffset: offset,
       gsrqiprofile: 'classic',
