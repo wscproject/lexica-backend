@@ -115,6 +115,30 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q5317225',
+    code: 'dtp',
+    title: 'Kadazandusun',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q7411',
+    code: 'nl',
+    title: 'Nederlands',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q5146',
+    code: 'pt',
+    title: 'Português',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {
