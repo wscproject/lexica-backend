@@ -9,6 +9,7 @@ export async function validateUpdateUserPreference(req, res, next) {
     const schema = {
       displayLanguageCode: Joi.string(),
       displayTheme: Joi.string().valid(Constant.DISPLAY_THEME.DEFAULT, Constant.DISPLAY_THEME.DARK, Constant.DISPLAY_THEME.LIGHT).allow(null, ''),
+      isAlternateFont: Joi.boolean(),
     };
     
     const payloadObject = joiFormErrors({
