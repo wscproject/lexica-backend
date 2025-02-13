@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon --exec npm run babel-node -- ./app/bin/www -x",
     "babel-node": "babel-node --presets=@babel/preset-env",
-    "build-server": "babel -d ./build ./app -s",
+    "build-server": "babel -d ./build ./app -s && cp -r ./app/docs ./build/",
     "frontend:install": "cd ../lexica-frontend && npm install",
     "frontend:build": "cd ../lexica-frontend && npm run build",
     "frontend:copy": "cp -r ../lexica-frontend/dist/* app/dist/",
