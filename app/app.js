@@ -8,6 +8,8 @@ import MethodOverride from 'method-override';
 import Morgan from 'morgan';
 import Config from './configs/env.config';
 import User from './routes/user/v1';
+import SwaggerUi from "swagger-ui-express";
+import SwaggerDocs from "./docs/swagger.json";
 
 const app = Express();
 app.use(BodyParser.json({ limit: '10mb', extended: false }));
@@ -22,6 +24,9 @@ app.use(MethodOverride('X-HTTP-Method-Override'));
 app.use(Morgan('dev'));
 
 app.use('/api/v1', User);
+
+// Server swagger API docs
+app.use("/api/docs", SwaggerUi.serve, SwaggerUi.setup(SwaggerDocs));
 
 // Serve the static files from the Vue app
 app.use(Express.static(Path.join(__dirname, 'dist')));
