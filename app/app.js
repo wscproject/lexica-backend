@@ -26,7 +26,9 @@ app.use(Morgan('dev'));
 app.use('/api/v1', User);
 
 // Server swagger API docs
-app.use("/api/docs", SwaggerUi.serve, SwaggerUi.setup(SwaggerDocs));
+app.use("/api/docs", SwaggerUi.serve, SwaggerUi.setup(SwaggerDocs, {
+  customCss: '.swagger-ui .topbar { display: none }'
+}));
 
 // Serve the static files from the Vue app
 app.use(Express.static(Path.join(__dirname, 'dist')));
