@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon --exec npm run babel-node -- ./app/bin/www -x",
     "babel-node": "babel-node --presets=@babel/preset-env",
-    "build-server": "babel -d ./build ./app -s",
+    "build-server": "babel -d ./build ./app -s && cp -r ./app/docs ./build/",
     "frontend:install": "cd ../lexica-frontend && npm install",
     "frontend:build": "cd ../lexica-frontend && npm run build",
     "frontend:copy": "cp -r ../lexica-frontend/dist/* app/dist/",
@@ -42,6 +42,8 @@
     "qs": "^6.12.2",
     "sequelize": "^6.32.1",
     "sequelize-cli": "^6.3.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {

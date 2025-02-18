@@ -139,6 +139,14 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q56475',
+    code: 'ha',
+    title: 'Hausa',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {

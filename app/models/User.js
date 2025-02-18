@@ -33,6 +33,12 @@ module.exports = (sequelizeConnection) => {
       allowNull: false,
       defaultValue: 'light',
     },
+    isAlternateFont: {
+      field: 'is_alternate_font',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     activityType: {
       field: 'activity_type',
       type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
