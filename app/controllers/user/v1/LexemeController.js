@@ -555,12 +555,24 @@ export async function getLexemeSenseDetail(req, res) {
           images,
           itemForThisSense: null,
         };
-
-        if (lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO] && loggedInUser.languageCode !== Constant.DISPLAY_LANGUAGE.EN.ISO) {
-          otherSense.otherGlosses.push({
-            language: lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['language'],
-            value: lexemeSense['glosses'][Constant.DISPLAY_LANGUAGE.EN.ISO]['value']
-          });
+        
+        // get other glosses
+        if (lexemeSense['glosses']) {
+          for (const glossKey in lexemeSense['glosses']) {
+            if (glossKey === Constant.DISPLAY_LANGUAGE.EN.ISO && loggedInUser.languageCode !== Constant.DISPLAY_LANGUAGE.EN.ISO) {
+              otherSense.otherGlosses.push({
+                language: lexemeSense?.glosses[glossKey].language ,
+                value: lexemeSense?.glosses[glossKey].value,
+              });
+              break;
+            } else if (glossKey !== Constant.DISPLAY_LANGUAGE.EN.ISO && glossKey !== loggedInUser.languageCode) {
+              otherSense.otherGlosses.push({
+                language: lexemeSense?.glosses[glossKey].language ,
+                value: lexemeSense?.glosses[glossKey].value,
+              });
+              break;
+            }
+          }
         }
   
         if (lexemeSense['claims'] && lexemeSense['claims'][Constant.WIKIDATA_PROPERTY_CODE.ITEM_FOR_THIS_SENSE]) {
