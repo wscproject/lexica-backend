@@ -147,6 +147,14 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q33284',
+    code: 'bcl',
+    title: 'Bikol Central',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {
