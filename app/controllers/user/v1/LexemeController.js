@@ -63,11 +63,11 @@ export async function getLexemeDetail(req, res) {
         externalLexemeSenseId: sense['id'],
         senseNumber,
         gloss: sense['glosses'][loggedInUser.languageCode] ? sense['glosses'][loggedInUser.languageCode]['value'] : '',
-        otherGlosses: [],
         images: null,
         itemForThisSense: null,
         languageStyle: null,
         fieldOfUsage: null,
+        otherGlosses: [],
       }
 
       if (sense['glosses'][loggedInUser.languageCode]) {
