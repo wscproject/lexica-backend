@@ -159,7 +159,7 @@ const languages = [
     id: uuid(),
     external_id: 'Q8798',
     code: 'uk',
-    title: 'українська',
+    title: 'Українська',
     created_at: new Date(),
     updated_at: new Date(),
   },
