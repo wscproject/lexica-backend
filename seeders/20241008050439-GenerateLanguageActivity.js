@@ -83,6 +83,10 @@ const languageActivities = [
     code: 'uk',
     activities: ['connect']
   },
+  {
+    code: 'fr',
+    activities: ['connect']
+  },
 ];
 
 module.exports = {
