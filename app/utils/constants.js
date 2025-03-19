@@ -61,5 +61,6 @@ module.exports = {
   ACTIVITY: {
     CONNECT: 'connect',
     SCRIPT: 'script',
+    HYPHENATION: 'hyphenation',
   }
 };

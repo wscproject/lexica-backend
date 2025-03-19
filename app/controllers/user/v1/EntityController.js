@@ -27,7 +27,7 @@ export async function getEntities(req, res) {
           id: entity.id,
           label: entity.display.label.value,
           description: entity.display.description ? entity.display.description.value : '',
-          image: entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE] ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails['entities'][entity.id]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0]['mainsnak']['datavalue']['value']}` : '',
+          image: entityDetails.entities[entity.id].claims[Constant.WIKIDATA_PROPERTY_CODE.IMAGE] ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails.entities[entity.id].claims[Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0].mainsnak.datavalue.value}` : '',
           language: loggedInUser.languageCode,
         }
   
@@ -59,8 +59,8 @@ export async function getEntity(req, res) {
     const entity = await getEntityDetail({ entityId, props: 'labels|claims|descriptions', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
     const entityResponse = {
       id: entityId,
-      label: entity['entities'][entityId]['labels'][loggedInUser.displayLanguageCode] ? entity['entities'][entityId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
-      description: entity['entities'][entityId]['descriptions'][loggedInUser.displayLanguageCode] ? entity['entities'][entityId]['descriptions'][loggedInUser.displayLanguageCode]['value'] : '',
+      label: entity.entities[entityId].labels[loggedInUser.displayLanguageCode] ? entity.entities[entityId].labels[loggedInUser.displayLanguageCode].value : '',
+      description: entity.entities[entityId].descriptions[loggedInUser.displayLanguageCode] ? entity.entities[entityId].descriptions[loggedInUser.displayLanguageCode].value : '',
       statements: {
         instanceOf: null,
         subclass: null,
@@ -74,13 +74,13 @@ export async function getEntity(req, res) {
     };
 
     // get images
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
+    if (entity.entities[entityId].claims && entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
       const images = [];
-      for (const imageDetail of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
-        if (imageDetail['mainsnak']['datavalue']['value']) {
+      for (const imageDetail of entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.IMAGE]) {
+        if (imageDetail.mainsnak.datavalue.value) {
           images.push({
-            value: imageDetail['mainsnak']['datavalue']['value'],
-            url: `https://commons.wikimedia.org/wiki/Special:FilePath/${imageDetail['mainsnak']['datavalue']['value']}`,
+            value: imageDetail.mainsnak.datavalue.value,
+            url: `https://commons.wikimedia.org/wiki/Special:FilePath/${imageDetail.mainsnak.datavalue.value}`,
           });
         }
       }
@@ -94,16 +94,16 @@ export async function getEntity(req, res) {
     }
 
     // get instance of
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.INSTANCE_OF]) {
+    if (entity.entities[entityId].claims && entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.INSTANCE_OF]) {
       const instanceOf = [];
-      for (const instanceOfData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.INSTANCE_OF]) {
-        if (instanceOfData['mainsnak']['datavalue']['value']['id']) {
-          const instanceOfId = instanceOfData['mainsnak']['datavalue']['value']['id'];
+      for (const instanceOfData of entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.INSTANCE_OF]) {
+        if (instanceOfData.mainsnak.datavalue.value.id) {
+          const instanceOfId = instanceOfData.mainsnak.datavalue.value.id;
           const instanceOfDetail = await getEntityDetail({ entityId: instanceOfId, props: 'labels', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           instanceOf.push({
             id: instanceOfId,
-            value: instanceOfDetail['entities'][instanceOfId]['labels'][loggedInUser.displayLanguageCode] ? instanceOfDetail['entities'][instanceOfId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
+            value: instanceOfDetail.entities[instanceOfId].labels[loggedInUser.displayLanguageCode] ? instanceOfDetail.entities[instanceOfId].labels[loggedInUser.displayLanguageCode].value : '',
           });
         }
       }
@@ -117,16 +117,16 @@ export async function getEntity(req, res) {
     }
 
     // get subclass
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.SUBCLASS]) {
+    if (entity.entities[entityId].claims && entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.SUBCLASS]) {
       const subclass = [];
-      for (const subclassData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.SUBCLASS]) {
-        if (subclassData['mainsnak']['datavalue']['value']['id']) {
-          const subclassId = subclassData['mainsnak']['datavalue']['value']['id'];
+      for (const subclassData of entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.SUBCLASS]) {
+        if (subclassData.mainsnak.datavalue.value.id) {
+          const subclassId = subclassData.mainsnak.datavalue.value.id;
           const subclassDetail = await getEntityDetail({ entityId: subclassId, props: 'labels', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           subclass.push({
             id: subclassId,
-            value: subclassDetail['entities'][subclassId]['labels'][loggedInUser.displayLanguageCode] ? subclassDetail['entities'][subclassId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
+            value: subclassDetail.entities[subclassId].labels[loggedInUser.displayLanguageCode] ? subclassDetail.entities[subclassId].labels[loggedInUser.displayLanguageCode].value : '',
           });
         }
       }
@@ -140,16 +140,16 @@ export async function getEntity(req, res) {
     }
 
     // get part of
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.PART_OF]) {
+    if (entity.entities[entityId].claims && entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.PART_OF]) {
       const partOf = [];
-      for (const partOfData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.PART_OF]) {
-        if (partOfData['mainsnak']['datavalue']['value']['id']) {
-          const partOfId = partOfData['mainsnak']['datavalue']['value']['id'];
+      for (const partOfData of entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.PART_OF]) {
+        if (partOfData.mainsnak.datavalue.value.id) {
+          const partOfId = partOfData.mainsnak.datavalue.value.id;
           const partOfDetail = await getEntityDetail({ entityId: partOfId, props: 'labels', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           partOf.push({
             id: partOfId,
-            value: partOfDetail['entities'][partOfId]['labels'][loggedInUser.displayLanguageCode] ? partOfDetail['entities'][partOfId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
+            value: partOfDetail.entities[partOfId].labels[loggedInUser.displayLanguageCode] ? partOfDetail.entities[partOfId].labels[loggedInUser.displayLanguageCode].value : '',
           });
         }
       }
@@ -163,16 +163,16 @@ export async function getEntity(req, res) {
     }
 
     // get taxon name
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME]) {
+    if (entity.entities[entityId].claims && entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME]) {
       const taxonName = [];
-      for (const taxonNameData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME]) {
-        if (taxonNameData['mainsnak']['datavalue']['value']['id']) {
-          const taxonNameId = taxonNameData['mainsnak']['datavalue']['value']['id'];
+      for (const taxonNameData of entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.TAXON_NAME]) {
+        if (taxonNameData.mainsnak.datavalue.value.id) {
+          const taxonNameId = taxonNameData.mainsnak.datavalue.value.id;
           const taxonNameDetail = await getEntityDetail({ entityId: taxonNameId, props: 'labels', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           taxonName.push({
             id: taxonNameId,
-            value: taxonNameDetail['entities'][taxonNameId]['labels'][loggedInUser.displayLanguageCode] ? taxonNameDetail['entities'][taxonNameId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
+            value: taxonNameDetail.entities[taxonNameId].labels[loggedInUser.displayLanguageCode] ? taxonNameDetail.entities[taxonNameId].labels[loggedInUser.displayLanguageCode].value : '',
           });
         }
       }
@@ -186,16 +186,16 @@ export async function getEntity(req, res) {
     }
 
     // get has parts
-    if (entity['entities'][entityId]['claims'] && entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS]) {
+    if (entity.entities[entityId].claims && entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS]) {
       const hasParts = [];
-      for (const hasPartData of entity['entities'][entityId]['claims'][Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS]) {
-        if (hasPartData['mainsnak']['datavalue']['value']['id']) {
-          const hasPartId = hasPartData['mainsnak']['datavalue']['value']['id'];
+      for (const hasPartData of entity.entities[entityId].claims[Constant.WIKIDATA_PROPERTY_CODE.HAS_PARTS]) {
+        if (hasPartData.mainsnak.datavalue.value.id) {
+          const hasPartId = hasPartData.mainsnak.datavalue.value.id;
           const hasPartDetail = await getEntityDetail({ entityId: hasPartId, props: 'labels', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
 
           hasParts.push({
             id: hasPartId,
-            value: hasPartDetail['entities'][hasPartId]['labels'][loggedInUser.displayLanguageCode] ? hasPartDetail['entities'][hasPartId]['labels'][loggedInUser.displayLanguageCode]['value'] : '',
+            value: hasPartDetail.entities[hasPartId].labels[loggedInUser.displayLanguageCode] ? hasPartDetail.entities[hasPartId].labels[loggedInUser.displayLanguageCode].value : '',
           });
         }
       }

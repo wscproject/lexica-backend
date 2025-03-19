@@ -41,7 +41,7 @@ module.exports = (sequelizeConnection) => {
     },
     activityType: {
       field: 'activity_type',
-      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
+      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
       allowNull: true,
     },
     externalId: {

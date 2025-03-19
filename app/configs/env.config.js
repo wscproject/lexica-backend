@@ -16,6 +16,7 @@ const prodExt = {
   activity: {
     totalConnectLexemeSense: process.env.TOTAL_CONNECT_LEXEME_SENSE,
     totalScriptLexeme: process.env.TOTAL_SCRIPT_LEXEME,
+    totalHyphenationLexeme: process.env.TOTAL_HYPHENATION_LEXEME,
   },
   db: {
     host: process.env.DB_HOST,
@@ -55,6 +56,7 @@ const production = {
   activity: {
     totalConnectLexemeSense: process.env.TOTAL_CONNECT_LEXEME_SENSE,
     totalScriptLexeme: process.env.TOTAL_SCRIPT_LEXEME,
+    totalHyphenationLexeme: process.env.TOTAL_HYPHENATION_LEXEME,
   },
   db: {
     host: process.env.DB_HOST,
