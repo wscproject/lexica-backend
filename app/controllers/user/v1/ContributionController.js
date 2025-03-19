@@ -593,7 +593,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
             gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
             status: existingContributionHyphenationDetail.status,
             order: existingContributionHyphenationDetail.order,
-            image: currentLexeme.images.value ? currentLexeme.images.value.split(', ')[0] : '',
+            image: currentLexeme.images ? currentLexeme.images.value.split(', ')[0] : '',
           });
         }
       }
@@ -739,7 +739,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
             status: "pending",
             gloss: lexemeData.gloss ? lexemeData.gloss.value : '',
             order: orderNumber,
-            image: lexemeData.images.value ? lexemeData.images.value.split(', ')[0] : '',
+            image: lexemeData.images ? lexemeData.images.value.split(', ')[0] : '',
           }
           const createdContributionHyphenationDetail = await ContributionHyphenationDetail.create(contributionHyphenationDetailData, { transaction });
 
