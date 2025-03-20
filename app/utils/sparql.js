@@ -150,17 +150,23 @@ export async function generateRandomHyphenationLexemeQuery ({ languageId, langua
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid (SAMPLE(?glossString) AS ?gloss)  (SAMPLE(?imageString) AS ?image) WHERE {
-    ?lexeme dct:language wd:${languageId};
-      wikibase:lexicalCategory ?category;
-       wikibase:lemma ?lemma;
-      ontolex:lexicalForm ?form.
-     FILTER(REGEX(STR(?form), "L[0-9]+-F1$"))
-    ?form ontolex:representation ?lemma.
-    
-    FILTER(((STRLEN(?lemma)) >= 5 ) && (!(CONTAINS(?lemma, " "))))
-    FILTER(REGEX(?lemma, "^[A-Za-zÀ-ÿ]+$", "i"))
-    FILTER(NOT EXISTS { ?form wdt:P5279 ?hyphenation. })
+  SELECT ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid (GROUP_CONCAT(DISTINCT ?glossString; SEPARATOR = " ; ") AS ?gloss) (SAMPLE(?imageString) AS ?image) WHERE {
+    {
+      SELECT ?lexeme ?form ?lemma ?category (UUID() AS ?uuid) WHERE {
+        ?lexeme dct:language wd:${languageId};
+          wikibase:lexicalCategory ?category;
+          wikibase:lemma ?lemma;
+          ontolex:lexicalForm ?form.
+        #FILTER(REGEX(STR(?form), "L[0-9]+-F1$"))
+        ?form ontolex:representation ?lemma.
+        FILTER(((STRLEN(?lemma)) >= 5 ) && (!(CONTAINS(?lemma, " "))))
+        FILTER(REGEX(?lemma, "^[A-Za-zÀ-ÿ]+$", "i"))
+        FILTER(NOT EXISTS { ?form p:P5279 ?stmt. })
+        ${excludeQuery}
+      }
+      ORDER BY (?uuid)
+      LIMIT ${Config.activity.totalHyphenationLexeme}
+    }
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
       ?sense skos:definition ?glossString.
@@ -170,15 +176,10 @@ export async function generateRandomHyphenationLexemeQuery ({ languageId, langua
       ?lexeme ontolex:sense ?sense.
       ?sense wdt:P18 ?imageString.
     }
-
-    ${excludeQuery}
-    BIND(UUID() AS ?uuid)
     SERVICE SILENT wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
   }
   GROUP BY ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid
-  ORDER BY (?uuid)
-  LIMIT ${Config.activity.totalHyphenationLexeme}
   #${generatedUUID}`;
 
   return query;
@@ -193,17 +194,23 @@ export async function generateGetHyphenationLexemeQuery ({ languageId, languageC
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid (SAMPLE(?glossString) AS ?gloss)  (SAMPLE(?imageString) AS ?image) WHERE {
-    ?lexeme dct:language wd:${languageId};
-      wikibase:lexicalCategory ?category;
-       wikibase:lemma ?lemma;
-      ontolex:lexicalForm ?form.
-     FILTER(REGEX(STR(?form), "L[0-9]+-F1$"))
-    ?form ontolex:representation ?lemma.
-    
-    FILTER(((STRLEN(?lemma)) >= 5 ) && (!(CONTAINS(?lemma, " "))))
-    FILTER(REGEX(?lemma, "^[A-Za-zÀ-ÿ]+$", "i"))
-    FILTER(NOT EXISTS { ?form wdt:P5279 ?hyphenation. })
+  SELECT ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid (GROUP_CONCAT(DISTINCT ?glossString; SEPARATOR = " ; ") AS ?gloss) (SAMPLE(?imageString) AS ?image) WHERE {
+    {
+      SELECT ?lexeme ?form ?lemma ?category (UUID() AS ?uuid) WHERE {
+        ?lexeme dct:language wd:${languageId};
+          wikibase:lexicalCategory ?category;
+          wikibase:lemma ?lemma;
+          ontolex:lexicalForm ?form.
+        #FILTER(REGEX(STR(?form), "L[0-9]+-F1$"))
+        ?form ontolex:representation ?lemma.
+        FILTER(((STRLEN(?lemma)) >= 5 ) && (!(CONTAINS(?lemma, " "))))
+        FILTER(REGEX(?lemma, "^[A-Za-zÀ-ÿ]+$", "i"))
+        FILTER(NOT EXISTS { ?form p:P5279 ?stmt. })
+        ${includeQuery}
+      }
+      ORDER BY (?uuid)
+      LIMIT ${Config.activity.totalHyphenationLexeme}
+    }
     OPTIONAL {
       ?lexeme ontolex:sense ?sense.
       ?sense skos:definition ?glossString.
@@ -213,14 +220,10 @@ export async function generateGetHyphenationLexemeQuery ({ languageId, languageC
       ?lexeme ontolex:sense ?sense.
       ?sense wdt:P18 ?imageString.
     }
-
-    ${includeQuery}
-    BIND(UUID() AS ?uuid)
     SERVICE SILENT wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
   }
-  GROUP BY ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid
-  ORDER BY (?uuid)`;
+  GROUP BY ?lexeme ?lexemeLabel ?formLabel ?lemma ?categoryLabel ?categoryQID ?uuid`;
 
   return query;
 }
