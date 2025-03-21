@@ -163,6 +163,30 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q150',
+    code: 'fr',
+    title: 'Français',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q9078',
+    code: 'lv',
+    title: 'Latviešu',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q6654',
+    code: 'hr',
+    title: 'Hrvatski',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {

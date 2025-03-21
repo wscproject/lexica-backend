@@ -1,39 +1,30 @@
 import Sequelize from 'sequelize';
 
 module.exports = (sequelizeConnection) => {
-  const Contribution = sequelizeConnection.define('Contribution', {
+  const ContributionHyphenationDetail = sequelizeConnection.define('ContributionHyphenationDetail', {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
       allowNull: false,
     },
-    userId: {
-      field: 'user_id',
+    contributionId: {
+      field: 'contribution_id',
       type: Sequelize.UUID,
       allowNull: false,
       references: {
-        model: 'users', // name of Target model
+        model: 'contributions', // name of Target model
         key: 'id', // key in Target model that we're referencing
       },
     },
-    languageActivityId: {
-      field: 'language_activity_id',
-      type: Sequelize.UUID,
-      allowNull: false,
-      references: {
-        model: 'language_activities', // name of Target model
-        key: 'id', // key in Target model that we're referencing
-      },
-    },
-    externalUserId: {
-      field: 'external_user_id',
+    externalLexemeId: {
+      field: 'external_lexeme_id',
       type: Sequelize.STRING,
       allowNull: false,
     },
-    startTime: {
-      field: 'start_time',
-      type: Sequelize.DATE,
+    externalLexemeFormId: {
+      field: 'external_lexeme_form_id',
+      type: Sequelize.STRING,
       allowNull: false,
     },
     externalLanguageId: {
@@ -41,15 +32,30 @@ module.exports = (sequelizeConnection) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    status: {
-      type: Sequelize.ENUM('pending', 'completed'),
+    externalCategoryId: {
+      field: 'external_category_id',
+      type: Sequelize.STRING,
       allowNull: false,
     },
-    activityType: {
-      field: 'activity_type',
-      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
+    lemma: {
+      type: Sequelize.STRING,
       allowNull: false,
-      defaultValue: 'connect',
+    },
+    category: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    hyphenation: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: Sequelize.ENUM('pending', 'skipped', 'completed'),
+      allowNull: false,
+    },
+    order: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
     },
     createdAt: {
       field: 'created_at',
@@ -70,16 +76,16 @@ module.exports = (sequelizeConnection) => {
     },
   }, {
     freezeTableName: true,
-    tableName: 'contributions',
+    tableName: 'contribution_hyphenation_details',
     paranoid: true,
   });
 
-  Contribution.associate = (models) => {
-    Contribution.hasMany(models.ContributionConnectDetail, {
-      as: 'contributionConnectDetails',
+  ContributionHyphenationDetail.associate = (models) => {
+    ContributionHyphenationDetail.belongsTo(models.Contribution, {
+      as: 'contribution',
       foreignKey: 'contributionId',
     });
   };
 
-  return Contribution;
+  return ContributionHyphenationDetail;
 };

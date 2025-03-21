@@ -18,7 +18,7 @@ module.exports = (sequelizeConnection) => {
       allowNull: false,
     },
     type: {
-      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
+      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
       allowNull: false,
       unique: true,
     },

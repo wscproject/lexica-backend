@@ -5,15 +5,15 @@ const uuid = require('uuid').v4;
 const languageActivities = [
   {
     code: 'id',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ms',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'bjn',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'de',
@@ -21,19 +21,19 @@ const languageActivities = [
   },
   {
     code: 'en',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'jv',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'min',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'su',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'dag',
@@ -41,11 +41,11 @@ const languageActivities = [
   },
   {
     code: 'es',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ban',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'ru',
@@ -81,6 +81,18 @@ const languageActivities = [
   },
   {
     code: 'uk',
+    activities: ['connect']
+  },
+  {
+    code: 'fr',
+    activities: ['connect']
+  },
+  {
+    code: 'lv',
+    activities: ['connect']
+  },
+  {
+    code: 'hr',
     activities: ['connect']
   },
 ];

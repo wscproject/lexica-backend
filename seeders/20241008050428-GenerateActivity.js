@@ -23,6 +23,16 @@ const activities = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    title: 'Hifenasi',
+    description: 'Membagi leksem menjadi suku kata',
+    image_url: 'images/activity/Hyphenate.svg',
+    order: 3,
+    type: 'hyphenation',
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {
