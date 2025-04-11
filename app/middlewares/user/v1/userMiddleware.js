@@ -10,6 +10,7 @@ export async function validateUpdateUserPreference(req, res, next) {
       displayLanguageCode: Joi.string(),
       displayTheme: Joi.string().valid(Constant.DISPLAY_THEME.DEFAULT, Constant.DISPLAY_THEME.DARK, Constant.DISPLAY_THEME.LIGHT).allow(null, ''),
       isAlternateFont: Joi.boolean(),
+      isBold: Joi.boolean(),
     };
     
     const payloadObject = joiFormErrors({
