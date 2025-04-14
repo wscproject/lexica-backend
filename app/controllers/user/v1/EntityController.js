@@ -56,11 +56,12 @@ export async function getEntity(req, res) {
     const { entityId } = req.params;
 
     // get entitiy
-    const entity = await getEntityDetail({ entityId, props: 'labels|claims|descriptions', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
+    const entity = await getEntityDetail({ entityId, props: 'labels|claims|descriptions|aliases', language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
     const entityResponse = {
       id: entityId,
       label: entity.entities[entityId].labels[loggedInUser.displayLanguageCode] ? entity.entities[entityId].labels[loggedInUser.displayLanguageCode].value : '',
       description: entity.entities[entityId].descriptions[loggedInUser.displayLanguageCode] ? entity.entities[entityId].descriptions[loggedInUser.displayLanguageCode].value : '',
+      aliases: entity?.entities?.[entityId]?.aliases?.[loggedInUser.languageCode] ? entity.entities[entityId].aliases[loggedInUser.languageCode].map(item => item.value).join(', ') : '',
       statements: {
         instanceOf: null,
         subclass: null,
