@@ -36,6 +36,7 @@ export async function getUserProfile(req, res) {
       displayTheme: loggedInUser.displayTheme,
       activityType: loggedInUser.activityType,
       isAlternateFont: loggedInUser.isAlternateFont,
+      isBold: loggedInUser.isBold,
       ongoingContribution,
       language
     }
@@ -50,7 +51,7 @@ export async function updateUserPreference(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
-    const { displayLanguageCode, displayTheme, isAlternateFont } = req.body;
+    const { displayLanguageCode, displayTheme, isAlternateFont, isBold } = req.body;
 
     const updateUserPreference = {};
 
@@ -64,6 +65,10 @@ export async function updateUserPreference(req, res) {
 
     if (isAlternateFont !== undefined) {
       updateUserPreference.isAlternateFont = isAlternateFont;
+    }
+
+    if (isBold !== undefined) {
+      updateUserPreference.isBold = isBold;
     }
 
     await User.update(updateUserPreference, {

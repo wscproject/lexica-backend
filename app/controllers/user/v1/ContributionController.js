@@ -343,7 +343,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
             gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
             status: existingContributionScriptDetail.status,
             order: existingContributionScriptDetail.order,
-            image: currentLexeme.images.value ? currentLexeme.images.value.split(', ')[0] : '',
+            image: currentLexeme.image.value ? currentLexeme.image.value.split(', ')[0] : '',
           });
         }
       }
@@ -496,7 +496,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
             status: "pending",
             gloss: lexemeData.gloss ? lexemeData.gloss.value : '',
             order: orderNumber,
-            image: lexemeData.images.value ? lexemeData.images.value.split(', ')[0] : '',
+            image: lexemeData.image.value ? lexemeData.image.value.split(', ')[0] : '',
           }
           const createdContributionScriptDetail = await ContributionScriptDetail.create(contributionScriptDetailData, { transaction });
 
