@@ -12,32 +12,33 @@ export async function generateRandomConnectLexemeSenseQuery ({ languageId, langu
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lexemeLabel ?senseLabel ?categoryLabel ?categoryQID ?gloss (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma) (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?image) WHERE {
-    {
-      SELECT ?lexeme ?sense ?lemmaString ?category (UUID() AS ?uuid) WHERE {
-        ?lexeme dct:language wd:${languageId};
-          wikibase:lexicalCategory wd:Q1084, ?category;
-          wikibase:lemma ?lemmaString;
-          ontolex:sense ?sense.
-        MINUS { ?sense wdt:P5137 ?senseItem. }
-        MINUS {
-          ?lexeme ontolex:sense ?senseWithItem.
-          ?senseWithItem (wdt:P5137|wdt:P6271|wdt:P6593) [].
-        }
-        ${excludeQuery}
-      }
-      ORDER BY (?uuid)
-      LIMIT ${Config.activity.totalConnectLexemeSense}
-    }
-    OPTIONAL {
-      ?sense skos:definition ?gloss.
-      FILTER((LANG(?gloss)) = "${languageCode}")
-    }
+  SELECT ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
+    (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma) 
+    (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
+    (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images)
+  WHERE {
+    ?lexeme dct:language wd:${languageId};
+      wikibase:lexicalCategory wd:Q1084;
+      wikibase:lexicalCategory ?category;
+      wikibase:lemma ?lemmaString;
+      ontolex:sense ?sense.
+    OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     OPTIONAL { ?sense wdt:P18 ?imageString. }
+    MINUS { ?sense wdt:P5137 ?senseItem. }
+    MINUS {
+      ?lexeme ontolex:sense ?senseWithItem.
+      ?senseWithItem wdt:P5137|wdt:P6271|wdt:P6593 [] 
+    }
+    ${excludeQuery}
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
-    SERVICE SILENT wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
+    SERVICE wikibase:label { 
+      bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]".
+    }
+    BIND(UUID() AS ?uuidString)
   }
-  GROUP BY ?lexemeLabel ?senseLabel ?categoryLabel ?categoryQID ?gloss
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
+  ORDER BY ?uuid
+  LIMIT ${Config.activity.totalConnectLexemeSense}
   #${generatedUUID}`;
 
   return query;
@@ -49,30 +50,31 @@ export async function generateGetConnectLexemeSenseQuery ({ languageId, language
   
   // generate get random lexeme query
   const query = `
-  SELECT ?lexemeLabel ?senseLabel ?categoryLabel ?categoryQID ?gloss (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma) (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?image) WHERE {
-    {
-      SELECT ?lexeme ?sense ?lemmaString ?category (UUID() AS ?uuid) WHERE {
-        ?lexeme dct:language wd:${languageId};
-          wikibase:lexicalCategory wd:Q1084, ?category;
-          wikibase:lemma ?lemmaString;
-          ontolex:sense ?sense.
-        MINUS { ?sense wdt:P5137 ?senseItem. }
-        MINUS {
-          ?lexeme ontolex:sense ?senseWithItem.
-          ?senseWithItem (wdt:P5137|wdt:P6271|wdt:P6593) [].
-        }
-        ${includeQuery}
-      }
-    }
-    OPTIONAL {
-      ?sense skos:definition ?gloss.
-      FILTER((LANG(?gloss)) = "${languageCode}")
-    }
+  SELECT ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID
+    (GROUP_CONCAT(DISTINCT ?lemmaString; SEPARATOR = " / ") AS ?lemma) 
+    (GROUP_CONCAT(DISTINCT ?uuidString; SEPARATOR = " / ") AS ?uuid)
+    (GROUP_CONCAT(DISTINCT ?imageString; SEPARATOR = ", ") AS ?images)
+  WHERE {
+    ?lexeme dct:language wd:${languageId};
+      wikibase:lexicalCategory wd:Q1084;
+      wikibase:lexicalCategory ?category;
+      wikibase:lemma ?lemmaString;
+      ontolex:sense ?sense.
+    OPTIONAL { ?sense skos:definition ?gloss. FILTER(LANG(?gloss) = "${languageCode}")}
     OPTIONAL { ?sense wdt:P18 ?imageString. }
+    MINUS { ?sense wdt:P5137 ?senseItem. }
+    MINUS {
+      ?lexeme ontolex:sense ?senseWithItem.
+      ?senseWithItem wdt:P5137|wdt:P6271|wdt:P6593 [] 
+    }
+    ${includeQuery}
     BIND(STRAFTER(STR(?category), "http://www.wikidata.org/entity/") AS ?categoryQID)
-    SERVICE SILENT wikibase:label { bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]". }
+    SERVICE wikibase:label { 
+      bd:serviceParam wikibase:language "${displayLanguage}, [AUTO_LANGUAGE]".
+    }
+    BIND(UUID() AS ?uuidString)
   }
-  GROUP BY ?lexemeLabel ?senseLabel ?categoryLabel ?categoryQID ?gloss`;
+  GROUP BY ?senseLabel ?lexemeLabel ?categoryLabel ?gloss ?categoryQID`;
 
   return query;
 }

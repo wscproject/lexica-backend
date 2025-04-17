@@ -93,7 +93,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
             gloss: currentLexeme.gloss ? currentLexeme.gloss.value : '',
             status: existingContributionConnectDetail.status,
             order: existingContributionConnectDetail.order,
-            image: currentLexeme.image.value ? currentLexeme.image.value.split(', ')[0] : '',
+            image: currentLexeme.images.value ? currentLexeme.images.value.split(', ')[0] : '',
           });
         }
       }
@@ -237,7 +237,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
             category: lexemeData.categoryLabel.value,
             gloss: lexemeData.gloss ? lexemeData.gloss.value : '',
             status: "pending",
-            image: lexemeData.image.value ? lexemeData.image.value.split(', ')[0] : '',
+            image: lexemeData.images.value ? lexemeData.images.value.split(', ')[0] : '',
             order: orderNumber,
           };
 
