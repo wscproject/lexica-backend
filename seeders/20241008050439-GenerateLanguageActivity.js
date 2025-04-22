@@ -95,6 +95,22 @@ const languageActivities = [
     code: 'hr',
     activities: ['connect']
   },
+  {
+    code: 'ar',
+    activities: ['connect']
+  },
+  {
+    code: 'fa',
+    activities: ['connect']
+  },
+  {
+    code: 'yi',
+    activities: ['connect']
+  },
+  {
+    code: 'he',
+    activities: ['connect']
+  },
 ];
 
 module.exports = {
