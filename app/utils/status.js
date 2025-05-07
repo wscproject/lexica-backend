@@ -42,10 +42,6 @@ module.exports = {
       CODE: 500201,
       MESSAGE: 'Lexeme already exist.',
     },
-    LEXEME_STUDENT_ID_IMAGE_REQUIRED: {
-      CODE: 500202,
-      MESSAGE: 'Lexeme student id image required.',
-    },
 
     // ENTITY
     ENTITY_NOT_FOUND: (entityId = '') => {
@@ -69,7 +65,7 @@ module.exports = {
       MESSAGE: 'Failed update lexeme sense with wikidata API.',
     },
     ON_GOING_CONTRIBUTION_NOT_FOUND: {
-      CODE: 500400,
+      CODE: 500402,
       MESSAGE: 'Ongoing contribution not found.',
     },
 
@@ -99,10 +95,6 @@ module.exports = {
     SOMETHING_WENT_WRONG: {
       CODE: 60001,
       MESSAGE: 'Something Went Wrong, Please Try Again Later.',
-    },
-    INVALID_IMAGE_RESOLUTION: {
-      CODE: 60002,
-      MESSAGE: 'Image ratio should be 1:1',
     },
   },
 };
