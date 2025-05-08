@@ -187,6 +187,42 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q13955',
+    code: 'ar',
+    title: 'العربية',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q9168',
+    code: 'fa',
+    title: 'فارسی',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q8641',
+    code: 'yi',
+    title: 'ייִדיש',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q9288',
+    code: 'he',
+    title: 'עברית',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {
