@@ -37,6 +37,7 @@ export async function getUserProfile(req, res) {
       activityType: loggedInUser.activityType,
       isAlternateFont: loggedInUser.isAlternateFont,
       isBold: loggedInUser.isBold,
+      isUnderline: loggedInUser.isUnderline,
       ongoingContribution,
       language
     }
