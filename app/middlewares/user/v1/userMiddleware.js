@@ -11,6 +11,7 @@ export async function validateUpdateUserPreference(req, res, next) {
       displayTheme: Joi.string().valid(Constant.DISPLAY_THEME.DEFAULT, Constant.DISPLAY_THEME.DARK, Constant.DISPLAY_THEME.LIGHT).allow(null, ''),
       isAlternateFont: Joi.boolean(),
       isBold: Joi.boolean(),
+      isUnderline: Joi.boolean(),
     };
     
     const payloadObject = joiFormErrors({

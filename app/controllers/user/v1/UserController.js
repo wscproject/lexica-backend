@@ -51,7 +51,7 @@ export async function updateUserPreference(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
-    const { displayLanguageCode, displayTheme, isAlternateFont, isBold } = req.body;
+    const { displayLanguageCode, displayTheme, isAlternateFont, isBold, isUnderline } = req.body;
 
     const updateUserPreference = {};
 
@@ -69,6 +69,10 @@ export async function updateUserPreference(req, res) {
 
     if (isBold !== undefined) {
       updateUserPreference.isBold = isBold;
+    }
+
+    if (isUnderline !== undefined) {
+      updateUserPreference.isUnderline = isUnderline;
     }
 
     await User.update(updateUserPreference, {
