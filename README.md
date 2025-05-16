@@ -39,11 +39,7 @@ This repository contains the backend code for Lexica, a tool designed to facilit
    ```
    ### PM2 Build (optional)
    ```bash
-
-   # Build server
-   npm run build-server
-   ```bash
-   npm start
+   npm run build
    ```
 
 
