@@ -1,3 +1,12 @@
+/**
+ * User Controller
+ * Handles user profile management and preferences
+ * 
+ * This controller provides endpoints for:
+ * 1. Retrieving user profile information
+ * 2. Updating user preferences (language, theme, font settings)
+ */
+
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
@@ -6,11 +15,23 @@ import Status from '../../../utils/status';
 import Constant from '../../../utils/constants';
 import { responseError, responseSuccess } from '../../../utils/output';
 
+/**
+ * Retrieves the complete user profile including preferences and ongoing contributions
+ * 
+ * @param {Object} req - Express request object containing loggedInUser
+ * @param {Object} res - Express response object
+ * @returns {Object} Response containing:
+ *   - User basic info (id, username)
+ *   - Language preferences
+ *   - Display preferences (theme, font settings)
+ *   - Ongoing contribution status
+ *   - Associated language details
+ */
 export async function getUserProfile(req, res) {
   try {
     const { loggedInUser } = req;
 
-    // get ongoing contribution
+    // Check for any ongoing contributions by the user
     const ongoingContributionData = await Contribution.findOne({
       where: {
         userId: loggedInUser.id,
@@ -18,6 +39,7 @@ export async function getUserProfile(req, res) {
       },
     });
 
+    // Fetch user's selected language details
     const language = await Language.findOne({
       attributes: ['id', 'externalId', 'title', 'code'],
       where: {
@@ -25,8 +47,10 @@ export async function getUserProfile(req, res) {
       }
     });
 
+    // Convert contribution data to boolean flag
     const ongoingContribution = ongoingContributionData ? true : false;
 
+    // Compile complete user profile response
     const response = {
       id: loggedInUser.id,
       username: loggedInUser.username,
@@ -37,6 +61,7 @@ export async function getUserProfile(req, res) {
       activityType: loggedInUser.activityType,
       isAlternateFont: loggedInUser.isAlternateFont,
       isBold: loggedInUser.isBold,
+      isUnderline: loggedInUser.isUnderline,
       ongoingContribution,
       language
     }
@@ -47,14 +72,26 @@ export async function getUserProfile(req, res) {
   }
 }
 
+/**
+ * Updates user preferences including language, theme, and font settings
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - body: Update parameters (displayLanguageCode, displayTheme, isAlternateFont, isBold, isUnderline)
+ * @param {Object} res - Express response object
+ * @returns {Object} Response containing updated user preferences
+ * @throws {Error} If database update fails
+ */
 export async function updateUserPreference(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
-    const { displayLanguageCode, displayTheme, isAlternateFont, isBold } = req.body;
+    const { displayLanguageCode, displayTheme, isAlternateFont, isBold, isUnderline } = req.body;
 
+    // Initialize update object
     const updateUserPreference = {};
 
+    // Add each preference to update object if provided
     if (displayLanguageCode) {
       updateUserPreference.displayLanguageCode = displayLanguageCode;
     }
@@ -71,6 +108,11 @@ export async function updateUserPreference(req, res) {
       updateUserPreference.isBold = isBold;
     }
 
+    if (isUnderline !== undefined) {
+      updateUserPreference.isUnderline = isUnderline;
+    }
+
+    // Update user preferences in database
     await User.update(updateUserPreference, {
       where: {
         id: loggedInUser.id

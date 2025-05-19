@@ -1,3 +1,17 @@
+/**
+ * Contribution Controller
+ * Handles user contributions for language lexemes including:
+ * 1. Connect - Linking lexemes with Wikidata items
+ * 2. Script - Adding script information to lexemes
+ * 3. Hyphenation - Adding hyphenation rules to lexemes
+ * 
+ * The controller manages the complete lifecycle of contributions:
+ * - Starting new contributions
+ * - Retrieving contribution details
+ * - Updating contribution details
+ * - Ending contributions
+ */
+
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable max-len */
@@ -28,16 +42,28 @@ import {
 } from '../../../utils/sparql';
 import { getCsrfToken, addItemToLexemeSense, addLemmaToLexeme, addHyphenationToLexemeForm, getEntityDetail } from '../../../utils/wikidata';
 
+/**
+ * Starts or resumes a Connect contribution session
+ * 
+ * @param {Object} params - Parameters object containing:
+ *   - transaction: Database transaction
+ *   - ongoingContribution: Existing contribution if any
+ *   - loggedInUser: Current authenticated user
+ *   - languageCode: Target language code
+ * @returns {Array} Array of contribution connect details
+ * @throws {Error} If language not found or activity not available
+ */
 async function startContributionConnect({transaction, ongoingContribution, loggedInUser, languageCode}) {
   let createdContributionConnectDetails = [];
   let existingLexeme = true;
   
   if (ongoingContribution) {
+    // Validate ongoing contribution type
     if (ongoingContribution.activityType !== Constant.ACTIVITY.CONNECT) {
       throw Status.ERROR.PENDING_ACTIVITY;
     }
 
-    // check existing contribution language
+    // Verify contribution language exists
     const existingLanguage = await Language.findOne({
       where: {
         externalId: ongoingContribution.externalLanguageId,
@@ -49,7 +75,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       throw Status.ERROR.LANGUAGE_NOT_FOUND;
     }
     
-    // return exisiting contribution data
+    // Retrieve existing contribution details
     const existingContributionConnectDetails = await ContributionConnectDetail.findAll({
       where: {
         contributionId: ongoingContribution.id,
@@ -62,7 +88,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       throw Status.ERROR.LEXEMES_NOT_FOUND;
     }
 
-    // generate include lexeme string
+    // Generate SPARQL query to fetch lexeme details
     let includeLexemeString = '';
     const existingContributionConnectDetailsMapping = existingContributionConnectDetails.map(includeData => {
       return `wd:${includeData.externalLexemeSenseId}`
@@ -70,15 +96,22 @@ async function startContributionConnect({transaction, ongoingContribution, logge
 
     includeLexemeString = existingContributionConnectDetailsMapping.join(", ");
 
-    // get lexemes
-    const query = await generateGetConnectLexemeSenseQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+    // Fetch lexeme details from Wikidata
+    const query = await generateGetConnectLexemeSenseQuery({ 
+      languageCode: existingLanguage.code, 
+      languageId: existingLanguage.externalId, 
+      include: includeLexemeString, 
+      displayLanguage: loggedInUser.displayLanguageCode 
+    });
     const queryResponse = await simpleQuery(query);
     if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
       const lexemes = queryResponse.results.bindings;
       for (const existingContributionConnectDetail of existingContributionConnectDetails) {
-        const currentLexeme = lexemes.find(lexemeData => lexemeData.senseLabel.value === existingContributionConnectDetail.externalLexemeSenseId);
+        const currentLexeme = lexemes.find(lexemeData => 
+          lexemeData.senseLabel.value === existingContributionConnectDetail.externalLexemeSenseId
+        );
 
-        // set lexeme detail
+        // Map lexeme data to contribution details
         if (currentLexeme) {
           createdContributionConnectDetails.push({
             id: existingContributionConnectDetail.id,
@@ -101,7 +134,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       throw Status.ERROR.LEXEMES_NOT_FOUND;
     }
   } else {
-    // check selected contribution language
+    // Verify selected language exists
     const existingLanguage = await Language.findOne({
       where: {
         code: languageCode,
@@ -113,6 +146,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       throw Status.ERROR.LANGUAGE_NOT_FOUND;
     }
 
+    // Check if language has connect activity enabled
     const languageActivity = await LanguageActivity.findOne({
       include:[
         { 
@@ -141,7 +175,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       throw Status.ERROR.ACTIVITY_NOT_FOUND;
     }
 
-    // create contribution data
+    // Create new contribution record
     const createdContribution = await Contribution.create(
       {
         userId: loggedInUser.id,
@@ -155,7 +189,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       { transaction }
     );
     
-    // find all updating lexemes 
+    // Find lexemes that are already being worked on
     const ongoingLexemeContributions = await ContributionConnectDetail.findAll({
       attributes: ['externalLexemeSenseId'],
       where: {
@@ -179,7 +213,7 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       transaction,
     });
 
-    // generate exclude lexeme string
+    // Generate SPARQL query to exclude already worked on lexemes
     let excludeLexemeString = '';
     if (ongoingLexemeContributions.length > 0) {
       const ongoingLexemeContributionsMapping = ongoingLexemeContributions.map(excludeData => {
@@ -189,8 +223,13 @@ async function startContributionConnect({transaction, ongoingContribution, logge
       excludeLexemeString = ongoingLexemeContributionsMapping.join(", ");   
     }
 
-    // get random lexemes
-    const query = await generateRandomConnectLexemeSenseQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+    // Fetch random lexemes for contribution
+    const query = await generateRandomConnectLexemeSenseQuery({ 
+      languageCode: existingLanguage.code, 
+      languageId: existingLanguage.externalId, 
+      exclude: excludeLexemeString, 
+      displayLanguage: loggedInUser.displayLanguageCode 
+    });
     while (existingLexeme) {
       let orderNumber = 1;
       const queryResponse = await simpleQuery(query);
@@ -271,15 +310,29 @@ async function startContributionConnect({transaction, ongoingContribution, logge
   return createdContributionConnectDetails;
 }
 
+/**
+ * Starts or resumes a Script contribution session
+ * Handles adding script information to lexemes
+ * 
+ * @param {Object} params - Parameters object containing:
+ *   - transaction: Database transaction
+ *   - ongoingContribution: Existing contribution if any
+ *   - loggedInUser: Current authenticated user
+ *   - languageCode: Target language code
+ * @returns {Array} Array of contribution script details
+ * @throws {Error} If language not found or activity not available
+ */
 async function startContributionScript({transaction, ongoingContribution, loggedInUser, languageCode}) {
   let createdContributionScriptDetails = [];
   let existingLexeme = true;
 
   if (ongoingContribution) {
+    // Validate ongoing contribution type
     if (ongoingContribution.activityType !== Constant.ACTIVITY.SCRIPT) {
       throw Status.ERROR.PENDING_ACTIVITY;
     }
-    // check existing contribution language
+
+    // Verify contribution language exists and get variant information
     const existingLanguage = await Language.findOne({
       attributes: ['id', 'code', 'externalId', 'title'],
       where: {
@@ -298,7 +351,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       throw Status.ERROR.LANGUAGE_NOT_FOUND;
     }
     
-    // return exisiting contribution data
+    // Retrieve existing contribution details
     const existingContributionScriptDetails = await ContributionScriptDetail.findAll({
       where: {
         contributionId: ongoingContribution.id,
@@ -311,7 +364,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       throw Status.ERROR.LEXEMES_NOT_FOUND;
     }
 
-    // generate include lexeme string
+    // Generate SPARQL query to fetch lexeme details
     let includeLexemeString = '';
     const existingContributionScriptDetailsMapping = existingContributionScriptDetails.map(includeData => {
       return `wd:${includeData.externalLexemeId}`
@@ -319,15 +372,22 @@ async function startContributionScript({transaction, ongoingContribution, logged
 
     includeLexemeString = existingContributionScriptDetailsMapping.join(", ");
 
-    // get lexemes
-    const query = await generateGetScriptLexemeQuery({ languageId: existingLanguage.externalId, languageCode: existingLanguage.code, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+    // Fetch lexeme details from Wikidata
+    const query = await generateGetScriptLexemeQuery({ 
+      languageId: existingLanguage.externalId, 
+      languageCode: existingLanguage.code, 
+      include: includeLexemeString, 
+      displayLanguage: loggedInUser.displayLanguageCode 
+    });
     const queryResponse = await simpleQuery(query);
     if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
       const lexemes = queryResponse.results.bindings;
       for (const existingContributionScriptDetail of existingContributionScriptDetails) {
-        const currentLexeme = lexemes.find(lexemeData => lexemeData.lexemeLabel.value === existingContributionScriptDetail.externalLexemeId);
+        const currentLexeme = lexemes.find(lexemeData => 
+          lexemeData.lexemeLabel.value === existingContributionScriptDetail.externalLexemeId
+        );
 
-        // set lexeme detail
+        // Map lexeme data to contribution details
         if (currentLexeme) {
           createdContributionScriptDetails.push({
             id: existingContributionScriptDetail.id,
@@ -351,7 +411,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       throw Status.ERROR.LEXEMES_NOT_FOUND;
     }
   } else {
-    // check selected contribution language
+    // Verify selected language exists and get variant information
     const existingLanguage = await Language.findOne({
       attributes: ['id', 'code', 'externalId', 'title'],
       where: {
@@ -370,6 +430,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       throw Status.ERROR.LANGUAGE_NOT_FOUND;
     }
 
+    // Check if language has script activity enabled
     const languageActivity = await LanguageActivity.findOne({
       include:[
         { 
@@ -398,7 +459,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       throw Status.ERROR.ACTIVITY_NOT_FOUND;
     }
 
-    // create contribution data
+    // Create new contribution record
     const createdContribution = await Contribution.create(
       {
         userId: loggedInUser.id,
@@ -412,7 +473,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       { transaction }
     );
     
-    // find all updating lexemes 
+    // Find lexemes that are already being worked on
     const ongoingLexemeContributions = await ContributionScriptDetail.findAll({
       attributes: ['externalLexemeId'],
       where: {
@@ -436,7 +497,7 @@ async function startContributionScript({transaction, ongoingContribution, logged
       transaction,
     });
 
-    // generate exclude lexeme string
+    // Generate SPARQL query to exclude already worked on lexemes
     let excludeLexemeString = '';
     if (ongoingLexemeContributions.length > 0) {
       const ongoingLexemeContributionsMapping = ongoingLexemeContributions.map(excludeData => {
@@ -446,8 +507,14 @@ async function startContributionScript({transaction, ongoingContribution, logged
       excludeLexemeString = ongoingLexemeContributionsMapping.join(", ");   
     }
 
-    // get random lexemes
-    const query = await generateRandomScriptLexemeQuery({ variantCode: existingLanguage.languageVariant.code, languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+    // Fetch random lexemes for contribution
+    const query = await generateRandomScriptLexemeQuery({ 
+      variantCode: existingLanguage.languageVariant.code, 
+      languageCode: existingLanguage.code, 
+      languageId: existingLanguage.externalId, 
+      exclude: excludeLexemeString, 
+      displayLanguage: loggedInUser.displayLanguageCode 
+    });
     while (existingLexeme) {
       let orderNumber = 1;
       const queryResponse = await simpleQuery(query);
@@ -528,15 +595,29 @@ async function startContributionScript({transaction, ongoingContribution, logged
   return createdContributionScriptDetails;
 }
 
+/**
+ * Starts or resumes a Hyphenation contribution session
+ * Handles adding hyphenation rules to lexemes
+ * 
+ * @param {Object} params - Parameters object containing:
+ *   - transaction: Database transaction
+ *   - ongoingContribution: Existing contribution if any
+ *   - loggedInUser: Current authenticated user
+ *   - languageCode: Target language code
+ * @returns {Array} Array of contribution hyphenation details
+ * @throws {Error} If language not found or activity not available
+ */
 async function startContributionHyphenation({transaction, ongoingContribution, loggedInUser, languageCode}) {
   let createdContributionHyphenationDetails = [];
   let existingLexeme = true;
 
   if (ongoingContribution) {
+    // Validate ongoing contribution type
     if (ongoingContribution.activityType !== Constant.ACTIVITY.HYPHENATION) {
       throw Status.ERROR.PENDING_ACTIVITY;
     }
-    // check existing contribution language
+
+    // Verify contribution language exists
     const existingLanguage = await Language.findOne({
       attributes: ['id', 'code', 'externalId', 'title'],
       where: {
@@ -549,7 +630,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       throw Status.ERROR.LANGUAGE_NOT_FOUND;
     }
     
-    // return exisiting contribution data
+    // Retrieve existing contribution details
     const existingContributionHyphenationDetails = await ContributionHyphenationDetail.findAll({
       where: {
         contributionId: ongoingContribution.id,
@@ -562,7 +643,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       throw Status.ERROR.LEXEMES_NOT_FOUND;
     }
 
-    // generate include lexeme string
+    // Generate SPARQL query to fetch lexeme details
     let includeLexemeString = '';
     const existingContributionHyphenationDetailsMapping = existingContributionHyphenationDetails.map(includeData => {
       return `wd:${includeData.externalLexemeId}`
@@ -570,15 +651,22 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
 
     includeLexemeString = existingContributionHyphenationDetailsMapping.join(", ");
 
-    // get lexemes
-    const query = await generateGetHyphenationLexemeQuery({ languageId: existingLanguage.externalId, languageCode: existingLanguage.code, include: includeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
+    // Fetch lexeme details from Wikidata
+    const query = await generateGetHyphenationLexemeQuery({ 
+      languageId: existingLanguage.externalId, 
+      languageCode: existingLanguage.code, 
+      include: includeLexemeString, 
+      displayLanguage: loggedInUser.displayLanguageCode 
+    });
     const queryResponse = await simpleQuery(query);
     if (queryResponse.results && queryResponse.results.bindings && queryResponse.results.bindings.length > 0) {
       const lexemes = queryResponse.results.bindings;
       for (const existingContributionHyphenationDetail of existingContributionHyphenationDetails) {
-        const currentLexeme = lexemes.find(lexemeData => lexemeData.lexemeLabel.value === existingContributionHyphenationDetail.externalLexemeId);
+        const currentLexeme = lexemes.find(lexemeData => 
+          lexemeData.lexemeLabel.value === existingContributionHyphenationDetail.externalLexemeId
+        );
 
-        // set lexeme detail
+        // Map lexeme data to contribution details
         if (currentLexeme) {
           createdContributionHyphenationDetails.push({
             id: existingContributionHyphenationDetail.id,
@@ -601,7 +689,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       throw Status.ERROR.LEXEMES_NOT_FOUND;
     }
   } else {
-    // check selected contribution language
+    // Verify selected language exists
     const existingLanguage = await Language.findOne({
       attributes: ['id', 'code', 'externalId', 'title'],
       where: {
@@ -614,6 +702,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       throw Status.ERROR.LANGUAGE_NOT_FOUND;
     }
 
+    // Check if language has hyphenation activity enabled
     const languageActivity = await LanguageActivity.findOne({
       include:[
         { 
@@ -642,7 +731,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       throw Status.ERROR.ACTIVITY_NOT_FOUND;
     }
 
-    // create contribution data
+    // Create new contribution record
     const createdContribution = await Contribution.create(
       {
         userId: loggedInUser.id,
@@ -656,7 +745,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       { transaction }
     );
     
-    // find all updating lexemes 
+    // Find lexemes that are already being worked on
     const ongoingLexemeContributions = await ContributionHyphenationDetail.findAll({
       attributes: ['externalLexemeId'],
       where: {
@@ -680,7 +769,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       transaction,
     });
 
-    // generate exclude lexeme string
+    // Generate SPARQL query to exclude already worked on lexemes
     let excludeLexemeString = '';
     if (ongoingLexemeContributions.length > 0) {
       const ongoingLexemeContributionsMapping = ongoingLexemeContributions.map(excludeData => {
@@ -690,7 +779,7 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
       excludeLexemeString = ongoingLexemeContributionsMapping.join(", ");   
     }
 
-    // get random lexemes
+    // Fetch random lexemes for contribution
     const query = await generateRandomHyphenationLexemeQuery({ languageCode: existingLanguage.code, languageId: existingLanguage.externalId, exclude: excludeLexemeString, displayLanguage: loggedInUser.displayLanguageCode });
     while (existingLexeme) {
       let orderNumber = 1;
@@ -771,6 +860,18 @@ async function startContributionHyphenation({transaction, ongoingContribution, l
   return createdContributionHyphenationDetails;
 }
 
+/**
+ * Starts a new contribution session or resumes an existing one
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - body: Request body with:
+ *     - languageCode: Target language code
+ *     - activityType: Type of contribution (CONNECT/SCRIPT/HYPHENATION)
+ * @param {Object} res - Express response object
+ * @returns {Object} Response containing contribution details
+ * @throws {Error} If contribution cannot be started
+ */
 export async function startContribution(req, res) {
   const transaction = await sequelize.transaction();
   try {
@@ -779,7 +880,7 @@ export async function startContribution(req, res) {
 
     let contributionDetails = [];
 
-    // get ongoing contribution
+    // Check for any ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
         userId: loggedInUser.id,
@@ -788,6 +889,7 @@ export async function startContribution(req, res) {
       transaction,
     });
     
+    // Start appropriate contribution type
     if (activityType === Constant.ACTIVITY.CONNECT) {
       contributionDetails = await startContributionConnect({transaction, ongoingContribution, loggedInUser, languageCode});
     } else if (activityType === Constant.ACTIVITY.SCRIPT) {
@@ -804,12 +906,45 @@ export async function startContribution(req, res) {
   }
 }
 
+/**
+ * Retrieves detailed information for a Connect contribution
+ * This function handles fetching and formatting detailed information about a lexeme's connect contribution,
+ * including its senses, glosses, and related Wikidata items.
+ * 
+ * The function:
+ * 1. Validates the contribution detail exists and belongs to the user
+ * 2. Fetches lexeme details from Wikidata
+ * 3. Extracts lemma information
+ * 4. Builds a comprehensive response with:
+ *    - Basic lexeme info (lemma, category, language)
+ *    - Characteristics and usage examples
+ *    - Combines lexemes information
+ *    - Detailed sense information including:
+ *      - Glosses in different languages
+ *      - Images
+ *      - Language style
+ *      - Field of usage
+ *      - Location of sense usage
+ *      - Semantic gender
+ *      - Antonyms and synonyms
+ *      - Gloss quotes
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - params: URL parameters with:
+ *     - id: Contribution detail ID
+ *     - contributionId: Parent contribution ID
+ * @param {Object} res - Express response object
+ * @returns {Object} Response containing detailed lexeme information
+ * @throws {Error} If contribution detail not found
+ */
 export async function getContributionConnectDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { params, loggedInUser } = req;
     const { id, contributionId } = params;
 
+    // Find contribution detail with validation
     const contributionConnectDetail = await ContributionConnectDetail.findOne({
       where: {
         id,
@@ -830,18 +965,22 @@ export async function getContributionConnectDetail(req, res) {
       throw Status.ERROR.CONTRIBUTION_DETAIL_NOT_FOUND;
     }
 
-    // get ongoing contribution
-    const lexemeDetail = await getEntityDetail({ entityId: contributionConnectDetail.externalLexemeId, language: loggedInUser.languageCode, uselang: loggedInUser.languageCode });
+    // Fetch lexeme details from Wikidata
+    const lexemeDetail = await getEntityDetail({ 
+      entityId: contributionConnectDetail.externalLexemeId, 
+      language: loggedInUser.languageCode, 
+      uselang: loggedInUser.languageCode 
+    });
 
+    // Extract lemma information
     let lemma = '';
     if (lexemeDetail.entities[contributionConnectDetail.externalLexemeId].lemmas) {
-      // Extract the values from the object
-      const lemmaValues = Object.values(lexemeDetail.entities[contributionConnectDetail.externalLexemeId].lemmas).map(lemma => lemma.value);
-      
-      // Join the values with " / " separator
+      const lemmaValues = Object.values(lexemeDetail.entities[contributionConnectDetail.externalLexemeId].lemmas)
+        .map(lemma => lemma.value);
       lemma = lemmaValues.join(' / ');
     }
 
+    // Prepare response object
     const lexemeResponse = {
       id,
       contributionId,
@@ -858,18 +997,29 @@ export async function getContributionConnectDetail(req, res) {
       otherSenses: [],
     };
 
-    // get category value
+    // Fetch category information
     const lexemeCategoryId = lexemeDetail.entities[contributionConnectDetail.externalLexemeId].lexicalCategory;
-    const lexemeCategory = await getEntityDetail({ entityId: lexemeCategoryId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
-    lexemeResponse.category = lexemeCategory.entities[lexemeCategoryId].labels[loggedInUser.displayLanguageCode] ? lexemeCategory.entities[lexemeCategoryId].labels[loggedInUser.displayLanguageCode].value :  '';
+    const lexemeCategory = await getEntityDetail({ 
+      entityId: lexemeCategoryId, 
+      language: loggedInUser.displayLanguageCode, 
+      uselang: loggedInUser.languageCode 
+    });
+    lexemeResponse.category = lexemeCategory.entities[lexemeCategoryId].labels[loggedInUser.displayLanguageCode] 
+      ? lexemeCategory.entities[lexemeCategoryId].labels[loggedInUser.displayLanguageCode].value 
+      : '';
 
-    // get has characteristics data
-    if (lexemeDetail.entities[contributionConnectDetail.externalLexemeId].claims && lexemeDetail.entities[contributionConnectDetail.externalLexemeId].claims[Constant.WIKIDATA_PROPERTY_CODE.HAS_CHARACTERISTICS]) {
+    // Fetch characteristics information
+    if (lexemeDetail.entities[contributionConnectDetail.externalLexemeId].claims && 
+        lexemeDetail.entities[contributionConnectDetail.externalLexemeId].claims[Constant.WIKIDATA_PROPERTY_CODE.HAS_CHARACTERISTICS]) {
       const hasCharacteristics = [];
       for (const hasCharacteristicsData of lexemeDetail.entities[contributionConnectDetail.externalLexemeId].claims[Constant.WIKIDATA_PROPERTY_CODE.HAS_CHARACTERISTICS]) {
         if (hasCharacteristicsData.mainsnak.datavalue.value.id) {
           const hasCharacteristicsId = hasCharacteristicsData.mainsnak.datavalue.value.id;
-          const hasCharacteristicsDetail = await getEntityDetail({ entityId: hasCharacteristicsId, language: loggedInUser.displayLanguageCode, uselang: loggedInUser.languageCode });
+          const hasCharacteristicsDetail = await getEntityDetail({ 
+            entityId: hasCharacteristicsId, 
+            language: loggedInUser.displayLanguageCode, 
+            uselang: loggedInUser.languageCode 
+          });
 
           hasCharacteristics.push({
             id: hasCharacteristicsData.mainsnak.datavalue.value.id,
@@ -1239,6 +1389,34 @@ export async function getContributionConnectDetail(req, res) {
   }
 }
 
+/**
+ * Retrieves detailed information for a Script contribution
+ * This function handles fetching and formatting detailed information about a lexeme's script contribution,
+ * focusing on script variants and their associated information.
+ * 
+ * The function:
+ * 1. Validates the contribution detail exists and belongs to the user
+ * 2. Fetches language variant information
+ * 3. Retrieves lexeme details from Wikidata
+ * 4. Builds a comprehensive response with:
+ *    - Basic lexeme info (lemma, category, language)
+ *    - Language variant details
+ *    - For each sense:
+ *      - Glosses in different languages
+ *      - Images
+ *      - Item for this sense
+ *      - Language style
+ *      - Field of usage
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - params: URL parameters with:
+ *     - id: Contribution detail ID
+ *     - contributionId: Parent contribution ID
+ * @param {Object} res - Express response object
+ * @returns {Object} Response containing detailed lexeme information with script details
+ * @throws {Error} If contribution detail not found
+ */
 export async function getContributionScriptDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
@@ -1456,6 +1634,39 @@ export async function getContributionScriptDetail(req, res) {
   }
 }
 
+/**
+ * Retrieves detailed information for a Hyphenation contribution
+ * This function handles fetching and formatting detailed information about a lexeme's hyphenation contribution,
+ * focusing on hyphenation rules and grammatical features.
+ * 
+ * The function:
+ * 1. Validates the contribution detail exists and belongs to the user
+ * 2. Fetches language variant information
+ * 3. Retrieves lexeme details from Wikidata
+ * 4. Builds a comprehensive response with:
+ *    - Basic lexeme info (lemma, category, language)
+ *    - Language variant details
+ *    - Grammatical features for the specific form
+ *    - For each sense:
+ *      - Glosses in different languages
+ *      - Images
+ *      - Item for this sense
+ *      - Language style
+ *      - Field of usage
+ * 
+ * The key difference from other detail functions is the addition of:
+ * - Grammatical features specific to the form being hyphenated
+ * - Form-specific information rather than just lexeme-level data
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - params: URL parameters with:
+ *     - id: Contribution detail ID
+ *     - contributionId: Parent contribution ID
+ * @param {Object} res - Express response object
+ * @returns {Object} Response containing detailed lexeme information with hyphenation details
+ * @throws {Error} If contribution detail not found
+ */
 export async function getContributionHyphenationDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
@@ -1690,6 +1901,19 @@ export async function getContributionHyphenationDetail(req, res) {
   }
 }
 
+/**
+ * Updates a Connect contribution detail with new item information
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - params: URL parameters with id
+ *   - body: Request body with:
+ *     - action: Action to perform (ADD/NO_ITEM/SKIP)
+ *     - itemId: Wikidata item ID to link (for ADD action)
+ * @param {Object} res - Express response object
+ * @returns {Object} Updated contribution detail
+ * @throws {Error} If contribution detail not found or update fails
+ */
 export async function updateContributionConnectDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
@@ -1697,6 +1921,7 @@ export async function updateContributionConnectDetail(req, res) {
     const { id } = req.params;
     const { action, itemId } = req.body;
     
+    // Find and validate contribution detail
     const contributionConnectDetail = await ContributionConnectDetail.findOne({
       where: {
         id,
@@ -1718,9 +1943,11 @@ export async function updateContributionConnectDetail(req, res) {
       throw Status.ERROR.CONTRIBUTION_DETAIL_NOT_FOUND;
     }
 
+    // Process based on action type
     let status = '';
     let externalItemId = null;
     if (action === Constant.CONTRIBUTION_DETAIL_ACTION.ADD) {
+      // Add item to lexeme sense in Wikidata
       const csrfToken = await getCsrfToken({ accessToken: loggedInUser.wikiAccessToken });
       await addItemToLexemeSense({
         csrfToken,
@@ -1737,7 +1964,7 @@ export async function updateContributionConnectDetail(req, res) {
       status = Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED;
     }
 
-    // update contribution detail status
+    // Update contribution detail status
     await contributionConnectDetail.update({
       status,
       externalItemId,
@@ -1751,6 +1978,19 @@ export async function updateContributionConnectDetail(req, res) {
   }
 }
 
+/**
+ * Updates a Script contribution detail with new lemma information
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ *   - params: URL parameters with id
+ *   - body: Request body with:
+ *     - action: Action to perform (ADD/SKIP)
+ *     - lemma: New lemma text (for ADD action)
+ * @param {Object} res - Express response object
+ * @returns {Object} Updated contribution detail
+ * @throws {Error} If contribution detail not found or update fails
+ */
 export async function updateContributionScriptDetail(req, res) {
   const transaction = await sequelize.transaction();
   try {
@@ -1758,6 +1998,7 @@ export async function updateContributionScriptDetail(req, res) {
     const { id } = req.params;
     let { action, lemma } = req.body;
     
+    // Find and validate contribution detail
     const contributionScriptDetail = await ContributionScriptDetail.findOne({
       where: {
         id,
@@ -1869,12 +2110,21 @@ export async function updateContributionHyphenationDetail(req, res) {
   }
 }
 
+/**
+ * Ends the current contribution session and cleans up related data
+ * 
+ * @param {Object} req - Express request object containing:
+ *   - loggedInUser: Current authenticated user
+ * @param {Object} res - Express response object
+ * @returns {Object} Success response
+ * @throws {Error} If no ongoing contribution found
+ */
 export async function endContribution(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
 
-    // get ongoing contribution
+    // Find ongoing contribution
     const ongoingContribution = await Contribution.findOne({
       where: {
         userId: loggedInUser.id,
@@ -1887,38 +2137,61 @@ export async function endContribution(req, res) {
       throw Status.ERROR.ON_GOING_CONTRIBUTION_NOT_FOUND;
     }
 
+    // Clean up contribution details based on activity type
     if (ongoingContribution.activityType === Constant.ACTIVITY.CONNECT) {
+      // Remove all connect contribution details
       await ContributionConnectDetail.destroy({
         where: {
           contributionId: ongoingContribution.id,
-          status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED],
+          status: [
+            Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, 
+            Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, 
+            Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED
+          ],
         },
         transaction,
       });
     } else if (ongoingContribution.activityType === Constant.ACTIVITY.SCRIPT) {
+      // Remove all script contribution details
       await ContributionScriptDetail.destroy({
         where: {
           contributionId: ongoingContribution.id,
-          status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED],
+          status: [
+            Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, 
+            Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, 
+            Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED
+          ],
         },
         transaction,
       });
     } else if (ongoingContribution.activityType === Constant.ACTIVITY.HYPHENATION) {
+      // Remove all hyphenation contribution details
       await ContributionHyphenationDetail.destroy({
         where: {
           contributionId: ongoingContribution.id,
-          status: [Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED],
+          status: [
+            Constant.CONTRIBUTION_DETAIL_STATUS.PENDING, 
+            Constant.CONTRIBUTION_DETAIL_STATUS.SKIPPED, 
+            Constant.CONTRIBUTION_DETAIL_STATUS.COMPLETED
+          ],
         },
         transaction,
       });
     }
 
-    await ongoingContribution.update({
-      status: Constant.CONTRIBUTION_STATUS.COMPLETED,
-    }, { transaction });
+    // Remove the contribution record
+    await ongoingContribution.destroy({ transaction });
+
+    // Reset user's activity type
+    await User.update({
+      activityType: null,
+    }, { 
+      where: { id: loggedInUser.id }, 
+      transaction 
+    });
 
     await transaction.commit();
-    return responseSuccess(res, ongoingContribution);
+    return responseSuccess(res, { message: 'Contribution ended successfully' });
   } catch (err) {
     await transaction.rollback();
     return responseError(res, err);

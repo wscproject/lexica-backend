@@ -45,6 +45,12 @@ module.exports = (sequelizeConnection) => {
       allowNull: false,
       defaultValue: false,
     },
+    isUnderline: {
+      field: 'is_underline',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     activityType: {
       field: 'activity_type',
       type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
