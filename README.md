@@ -20,7 +20,7 @@ This repository contains the backend code for Lexica, a tool designed to facilit
    npm install
    ```
 
-3. Create a `.env` file in the root directory with `.env.example` variables
+3. Create a `.env` file in the root directory using the variables from `.env.example` file.
 
 4. Database migration
    ```bash
