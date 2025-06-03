@@ -17,7 +17,7 @@ const languageActivities = [
   },
   {
     code: 'de',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'en',
@@ -49,7 +49,7 @@ const languageActivities = [
   },
   {
     code: 'ru',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ig',
@@ -65,11 +65,11 @@ const languageActivities = [
   },
   {
     code: 'nl',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'pt',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ha',
@@ -81,19 +81,19 @@ const languageActivities = [
   },
   {
     code: 'uk',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'fr',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'lv',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'hr',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ar',
