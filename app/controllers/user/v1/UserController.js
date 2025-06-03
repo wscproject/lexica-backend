@@ -62,6 +62,7 @@ export async function getUserProfile(req, res) {
       isAlternateFont: loggedInUser.isAlternateFont,
       isBold: loggedInUser.isBold,
       isUnderline: loggedInUser.isUnderline,
+      isReducedMotion: loggedInUser.isReducedMotion,
       ongoingContribution,
       language
     }
@@ -86,7 +87,7 @@ export async function updateUserPreference(req, res) {
   const transaction = await sequelize.transaction();
   try {
     const { loggedInUser } = req;
-    const { displayLanguageCode, displayTheme, isAlternateFont, isBold, isUnderline } = req.body;
+    const { displayLanguageCode, displayTheme, isAlternateFont, isBold, isUnderline, isReducedMotion } = req.body;
 
     // Initialize update object
     const updateUserPreference = {};
@@ -110,6 +111,10 @@ export async function updateUserPreference(req, res) {
 
     if (isUnderline !== undefined) {
       updateUserPreference.isUnderline = isUnderline;
+    }
+
+    if (isReducedMotion !== undefined) {
+      updateUserPreference.isReducedMotion = isReducedMotion;
     }
 
     // Update user preferences in database

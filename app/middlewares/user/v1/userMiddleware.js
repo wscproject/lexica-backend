@@ -27,6 +27,7 @@ export async function validateUpdateUserPreference(req, res, next) {
       isAlternateFont: Joi.boolean(), // Optional boolean for alternate font
       isBold: Joi.boolean(), // Optional boolean for bold text
       isUnderline: Joi.boolean(), // Optional boolean for underlined text
+      isReducedMotion: Joi.boolean(), // Optional boolean for reduced motion
     };
     
     // Validate request body against schema
