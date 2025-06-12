@@ -1,7 +1,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addColumn('contributions', 'activity_type', {
-      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
+      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
       allowNull: false,
       defaultValue: 'connect',
     });

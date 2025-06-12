@@ -39,9 +39,27 @@ module.exports = (sequelizeConnection) => {
       allowNull: false,
       defaultValue: false,
     },
+    isBold: {
+      field: 'is_bold',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    isUnderline: {
+      field: 'is_underline',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    isReducedMotion: {
+      field: 'is_reduced_motion',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     activityType: {
       field: 'activity_type',
-      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenate'),
+      type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
       allowNull: true,
     },
     externalId: {

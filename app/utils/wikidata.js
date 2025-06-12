@@ -23,6 +23,31 @@ export async function searchEntities({ search = '', language = Constant.DISPLAY_
   return response;
 };
 
+export async function searchRecommendationEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
+  const params = {
+      action: 'query',
+      format: 'json',
+      generator: 'search',
+      converttitles: 1,
+      formatversion: 2,
+      errorformat: 'plaintext',
+      prop: 'entityterms|images|cirrusdoc',
+      wbetterms: 'alias|label|description',
+      wbetlanguage: language,
+      cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}`,
+      // uselang: language,
+      gsrsearch: `${search} -haswbstatement:P31=Q5|P31=Q5633421|P31=Q737498|P31=Q16024164|P31=Q13442814|P31=Q4167410`,
+      gsrlimit: limit,
+      gsroffset: offset,
+      gsrqiprofile: 'classic',
+      gsrinfo: 'totalhits',
+  };
+  
+  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
+
+  return response;
+};
+
 export async function getEntityDetail({ entityId, language = Constant.DISPLAY_LANGUAGE.ID.ISO, uselang = Constant.DISPLAY_LANGUAGE.ID.ISO, props = 'labels|claims', format = 'json' }){
   const params = {
       action: 'wbgetentities',
@@ -34,7 +59,7 @@ export async function getEntityDetail({ entityId, language = Constant.DISPLAY_LA
   };
   
   const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
-  if (response.error) {
+  if (!response || response.error) {
     throw Status.ERROR.ENTITY_NOT_FOUND(entityId);
   }
   return response;
@@ -53,7 +78,7 @@ export async function getCsrfToken({ accessToken }) {
   }
 
   const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params, headers });
-  if (response.error) {
+  if (!response || response.error) {
     throw Status.ERROR.FAILED_GET_CSRF_TOKEN;
   }
 
@@ -70,7 +95,7 @@ export async function getLanguageList() {
   };
 
   const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
-  if (response.error) {
+  if (!response || response.error) {
     throw Status.ERROR.WIKIDATA_LANGUAGE_NOT_FOUND;
   }
 
@@ -109,7 +134,7 @@ export async function addItemToLexemeSense({ accessToken, senseId, itemId, csrfT
   }
 
   const response = await Post({ url: `${Config.wiki.wikidataUrl}/w/api.php`, data: qs.stringify(body), headers });
-  if (response.errors) {
+  if (!response || response.errors) {
     throw Status.ERROR.FAILED_UPDATE_SENSE_IN_WIKI;
   }
   
@@ -148,27 +173,39 @@ export async function addLemmaToLexeme({ accessToken, lexemeId, variantCode, csr
   return response;
 }
 
-export async function searchRecommendationEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
-  const params = {
-      action: 'query',
-      format: 'json',
-      generator: 'search',
-      converttitles: 1,
-      formatversion: 2,
-      errorformat: 'plaintext',
-      prop: 'entityterms|images|cirrusdoc',
-      wbetterms: 'alias|label|description',
-      wbetlanguage: language,
-      cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}`,
-      // uselang: language,
-      gsrsearch: `${search} -haswbstatement:P31=Q5|P31=Q5633421|P31=Q737498|P31=Q16024164|P31=Q13442814|P31=Q4167410`,
-      gsrlimit: limit,
-      gsroffset: offset,
-      gsrqiprofile: 'classic',
-      gsrinfo: 'totalhits',
-  };
-  
-  const response = await Get({ url: `${Config.wiki.wikidataUrl}/w/api.php`, params });
+export async function addHyphenationToLexemeForm({ accessToken, formId, hyphenation, csrfToken, ignoreDuplicate = true }){
+  const generatedUUID = uuidv4();
+  const claim = {
+    type: "statement",
+    mainsnak: {
+      snaktype: "value",
+      property: "P5279",
+      datavalue: {
+        type: "string",
+        value: hyphenation,
+      }
+    },
+    id: `${formId}$${generatedUUID}`,
+  }
 
+  const body =  {
+    action: 'wbsetclaim',
+    format: 'json',
+    token: csrfToken,
+    claim: JSON.stringify(claim),
+    errorformat: 'plaintext',
+    ignoreduplicatemainsnak: ignoreDuplicate,
+  }
+
+  const headers =  {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    Authorization: `Bearer ${accessToken}`,
+  }
+
+  const response = await Post({ url: `${Config.wiki.wikidataUrl}/w/api.php`, data: qs.stringify(body), headers });
+  if (!response || response.errors) {
+    throw Status.ERROR.FAILED_UPDATE_SENSE_IN_WIKI;
+  }
+  
   return response;
-};
+}

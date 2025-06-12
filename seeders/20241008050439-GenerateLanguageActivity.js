@@ -5,35 +5,35 @@ const uuid = require('uuid').v4;
 const languageActivities = [
   {
     code: 'id',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ms',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'bjn',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'de',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'en',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'jv',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'min',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'su',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'dag',
@@ -41,15 +41,15 @@ const languageActivities = [
   },
   {
     code: 'es',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ban',
-    activities: ['connect', 'script']
+    activities: ['connect', 'script', 'hyphenation']
   },
   {
     code: 'ru',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ig',
@@ -65,14 +65,70 @@ const languageActivities = [
   },
   {
     code: 'nl',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'pt',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ha',
+    activities: ['connect']
+  },
+  {
+    code: 'bcl',
+    activities: ['connect']
+  },
+  {
+    code: 'uk',
+    activities: ['connect', 'hyphenation']
+  },
+  {
+    code: 'fr',
+    activities: ['connect', 'hyphenation']
+  },
+  {
+    code: 'lv',
+    activities: ['connect', 'hyphenation']
+  },
+  {
+    code: 'hr',
+    activities: ['connect', 'hyphenation']
+  },
+  {
+    code: 'ar',
+    activities: ['connect']
+  },
+  {
+    code: 'fa',
+    activities: ['connect']
+  },
+  {
+    code: 'yi',
+    activities: ['connect']
+  },
+  {
+    code: 'he',
+    activities: ['connect']
+  },
+  {
+    code: 'ja',
+    activities: ['connect']
+  },
+  {
+    code: 'ko',
+    activities: ['connect']
+  },
+  {
+    code: 'th',
+    activities: ['connect']
+  },
+  {
+    code: 'vi',
+    activities: ['connect']
+  },
+  {
+    code: 'tl',
     activities: ['connect']
   },
 ];
