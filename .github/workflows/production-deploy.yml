@@ -1,0 +1,31 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v3
+      
+    - name: SSH into Toolforge, become tool, and deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: login.toolforge.org
+        username: faridhmaulanawsc
+        key: ${{ secrets.TOOLFORGE_KEY }}
+        port: 22
+        script: |
+          become lexica-staging bash -c '
+            cp -r /home/faridhmaulanawsc/tmp_upload/* www/js/lexica-frontend/ &&
+            cd www/js/lexica-backend &&
+            git pull &&
+            webservice --backend=kubernetes node18 stop &&
+            webservice --backend=kubernetes node18 start
+          '

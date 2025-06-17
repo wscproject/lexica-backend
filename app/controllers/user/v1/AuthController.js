@@ -121,10 +121,14 @@ export async function login(req, res) {
     const userObject = {
       id: user.id,
       username: user.username,
+      isAlternateFont: user.isAlternateFont,
+      isBold: user.isBold,
+      isUnderline: user.isUnderline,
+      isReducedMotion: user.isReducedMotion,
     };
 
     // Step 5: Generate JWT token for session management
-    const token = Jwt.sign({ user: userObject }, Config.jwt.jwtSecret, {
+    const token = Jwt.sign({ user: { id: user.id, username: user.username } }, Config.jwt.jwtSecret, {
       expiresIn: Config.jwt.jwtExpirationInSeconds,
     });
 

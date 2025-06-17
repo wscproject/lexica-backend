@@ -17,7 +17,7 @@ const languageActivities = [
   },
   {
     code: 'de',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'en',
@@ -65,11 +65,11 @@ const languageActivities = [
   },
   {
     code: 'nl',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'pt',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ha',
@@ -89,11 +89,11 @@ const languageActivities = [
   },
   {
     code: 'lv',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'hr',
-    activities: ['connect']
+    activities: ['connect', 'hyphenation']
   },
   {
     code: 'ar',

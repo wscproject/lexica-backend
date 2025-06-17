@@ -51,6 +51,12 @@ module.exports = (sequelizeConnection) => {
       allowNull: false,
       defaultValue: false,
     },
+    isReducedMotion: {
+      field: 'is_reduced_motion',
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     activityType: {
       field: 'activity_type',
       type: Sequelize.ENUM('connect', 'script', 'match', 'hyphenation'),
