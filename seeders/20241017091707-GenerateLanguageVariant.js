@@ -80,7 +80,7 @@ module.exports = {
         );
 
         if (existingEntry.length > 0) {
-          console.log(`Entry for language ${code} and variant ${variant.title} already exists. Skipping...`);
+          console.log(`Entry for language ${code} and variant ${variant.code} already exists. Skipping...`);
           continue;
         }
 
@@ -98,7 +98,7 @@ module.exports = {
             deleted_at: null
           }
         ]);
-        console.log(`Inserted entry for language ${code} and activity ${variant.title}`);
+        console.log(`Inserted entry for language ${code} and activity ${variant.code}`);
       }
     }
   },
