@@ -49,7 +49,7 @@ const languageActivities = [
   },
   {
     code: 'ru',
-    activities: ['connect', 'hyphenation']
+    activities: ['connect']
   },
   {
     code: 'ig',
@@ -81,11 +81,11 @@ const languageActivities = [
   },
   {
     code: 'uk',
-    activities: ['connect', 'hyphenation']
+    activities: ['connect']
   },
   {
     code: 'fr',
-    activities: ['connect', 'hyphenation']
+    activities: ['connect']
   },
   {
     code: 'lv',
