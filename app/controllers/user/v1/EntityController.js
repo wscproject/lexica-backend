@@ -323,24 +323,35 @@ export async function getEntity(req, res) {
 export async function getRecommendations(req, res) {
   try {
     const { loggedInUser } = req;
-    const { search } = req.query;
+    const { search, displayLanguageCode, languageCode } = req.query;
+    let { limit, page } = req.query;
+
+    // Set pagination parameters
+    limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
+    page = page ? Number(page) : Constant.PAGINATION.PAGE;
+    const offset = (page - 1) * limit;
 
     // Get recommendations from Wikidata
     const recommendations = await searchRecommendationEntities({ 
-      search, 
-      language: loggedInUser.displayLanguageCode, 
-      uselang: loggedInUser.languageCode 
+      search,
+      limit,
+      offset,
+      language: displayLanguageCode || Constant.DISPLAY_LANGUAGE.EN.ISO, 
+      uselang: languageCode || Constant.DISPLAY_LANGUAGE.EN.ISO
     });
 
     // Format recommendations for response
     const recommendationResponse = [];
-    if (recommendations.search && recommendations.search.length > 0) {
-      for (const recommendation of recommendations.search) {
+    if (recommendations.query.pages && recommendations.query.pages.length > 0) {
+      for (const recommendation of recommendations.query.pages) {
         recommendationResponse.push({
-          id: recommendation.id,
-          label: recommendation.display.label.value,
-          description: recommendation.display.description ? recommendation.display.description.value : '',
-          language: loggedInUser.languageCode,
+          id: recommendation.title,
+          label: recommendation?.entityterms?.label?.[0] || '',
+          description: recommendation?.entityterms?.description?.[0] || '',
+          image: recommendation?.images?.[0]?.title
+            ? `https://commons.wikimedia.org/wiki/Special:FilePath/${recommendation.images[0].title}` 
+            : '',
+          language: languageCode,
         });
       }
     }

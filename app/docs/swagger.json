@@ -36,21 +36,6 @@
       "name": "Wikidata"
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Enter your token in the format 'Bearer <token>'"
-      }
-    }
-  },
-  "security": [
-    {
-      "BearerAuth": []
-    }
-  ],
   "paths": {
     "/activities": {
       "get": {
