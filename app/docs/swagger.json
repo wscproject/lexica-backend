@@ -1048,7 +1048,7 @@
         }
       }
     },
-    "/entites": {
+    "/entities": {
       "get": {
         "tags": [
           "Entity"
@@ -1223,7 +1223,7 @@
         }
       }
     },
-    "/entites/recommendations": {
+    "/entities/recommendations": {
       "get": {
         "tags": [
           "Entity"
@@ -1398,7 +1398,7 @@
         }
       }
     },
-    "/entites/{entityId}": {
+    "/entities/{entityId}": {
       "get": {
         "tags": [
           "Entity"

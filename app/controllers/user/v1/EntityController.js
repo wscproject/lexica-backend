@@ -29,8 +29,10 @@ import { searchEntities, getEntityDetail, searchRecommendationEntities} from '..
  */
 export async function getEntities(req, res) {
   try {
-    const { loggedInUser } = req;
-    let { limit, page, search } = req.query;
+    let { limit, page, search, displayLanguageCode, languageCode } = req.query;
+
+    displayLanguageCode = displayLanguageCode || Constant.DISPLAY_LANGUAGE.EN.ISO, 
+    languageCode = languageCode || Constant.DISPLAY_LANGUAGE.EN.ISO
 
     // Set pagination parameters
     limit = limit ? Number(limit) : Constant.PAGINATION.LIMIT;
@@ -43,8 +45,8 @@ export async function getEntities(req, res) {
       search, 
       limit, 
       offset, 
-      language: loggedInUser.displayLanguageCode, 
-      uselang: loggedInUser.languageCode 
+      language: displayLanguageCode, 
+      uselang: languageCode 
     });
 
     if (entities.search && entities.search.length > 0) {
@@ -53,8 +55,8 @@ export async function getEntities(req, res) {
       const entityDetails = await getEntityDetail({ 
         entityId: entityIds, 
         props: 'claims', 
-        language: loggedInUser.displayLanguageCode, 
-        uselang: loggedInUser.languageCode 
+        language: displayLanguageCode, 
+        uselang: languageCode 
       });
 
       // Map entity data to response format
@@ -66,7 +68,7 @@ export async function getEntities(req, res) {
           image: entityDetails.entities[entity.id].claims[Constant.WIKIDATA_PROPERTY_CODE.IMAGE] 
             ? `https://commons.wikimedia.org/wiki/Special:FilePath/${entityDetails.entities[entity.id].claims[Constant.WIKIDATA_PROPERTY_CODE.IMAGE][0].mainsnak.datavalue.value}` 
             : '',
-          language: loggedInUser.languageCode,
+          language: languageCode,
         }
   
         entityResponse.push(temporaryEntity);
@@ -101,28 +103,31 @@ export async function getEntities(req, res) {
  */
 export async function getEntity(req, res) {
   try {
-    const { loggedInUser } = req;
     const { entityId } = req.params;
+    let { displayLanguageCode, languageCode } = req.query;
+
+    displayLanguageCode = displayLanguageCode || Constant.DISPLAY_LANGUAGE.EN.ISO, 
+    languageCode = languageCode || Constant.DISPLAY_LANGUAGE.EN.ISO
 
     // Fetch entity details from Wikidata
     const entity = await getEntityDetail({ 
       entityId, 
       props: 'labels|claims|descriptions|aliases', 
-      language: loggedInUser.displayLanguageCode, 
-      uselang: loggedInUser.languageCode 
+      language: displayLanguageCode, 
+      uselang: languageCode 
     });
 
     // Prepare base response object
     const entityResponse = {
       id: entityId,
-      label: entity.entities[entityId].labels[loggedInUser.displayLanguageCode] 
-        ? entity.entities[entityId].labels[loggedInUser.displayLanguageCode].value 
+      label: entity.entities[entityId].labels[displayLanguageCode] 
+        ? entity.entities[entityId].labels[displayLanguageCode].value 
         : '',
-      description: entity.entities[entityId].descriptions[loggedInUser.displayLanguageCode] 
-        ? entity.entities[entityId].descriptions[loggedInUser.displayLanguageCode].value 
+      description: entity.entities[entityId].descriptions[displayLanguageCode] 
+        ? entity.entities[entityId].descriptions[displayLanguageCode].value 
         : '',
-      aliases: entity?.entities?.[entityId]?.aliases?.[loggedInUser.languageCode] 
-        ? entity.entities[entityId].aliases[loggedInUser.languageCode].map(item => item.value).join(', ') 
+      aliases: entity?.entities?.[entityId]?.aliases?.[languageCode] 
+        ? entity.entities[entityId].aliases[languageCode].map(item => item.value).join(', ') 
         : '',
       statements: {
         instanceOf: null,
@@ -163,14 +168,14 @@ export async function getEntity(req, res) {
           const instanceOfDetail = await getEntityDetail({ 
             entityId: instanceOfId, 
             props: 'labels', 
-            language: loggedInUser.displayLanguageCode, 
-            uselang: loggedInUser.languageCode 
+            language: displayLanguageCode, 
+            uselang: languageCode 
           });
 
           instanceOf.push({
             id: instanceOfId,
-            value: instanceOfDetail.entities[instanceOfId].labels[loggedInUser.displayLanguageCode] 
-              ? instanceOfDetail.entities[instanceOfId].labels[loggedInUser.displayLanguageCode].value 
+            value: instanceOfDetail.entities[instanceOfId].labels[displayLanguageCode] 
+              ? instanceOfDetail.entities[instanceOfId].labels[displayLanguageCode].value 
               : '',
           });
         }
@@ -193,14 +198,14 @@ export async function getEntity(req, res) {
           const subclassDetail = await getEntityDetail({ 
             entityId: subclassId, 
             props: 'labels', 
-            language: loggedInUser.displayLanguageCode, 
-            uselang: loggedInUser.languageCode 
+            language: displayLanguageCode, 
+            uselang: languageCode 
           });
 
           subclass.push({
             id: subclassId,
-            value: subclassDetail.entities[subclassId].labels[loggedInUser.displayLanguageCode] 
-              ? subclassDetail.entities[subclassId].labels[loggedInUser.displayLanguageCode].value 
+            value: subclassDetail.entities[subclassId].labels[displayLanguageCode] 
+              ? subclassDetail.entities[subclassId].labels[displayLanguageCode].value 
               : '',
           });
         }
@@ -223,14 +228,14 @@ export async function getEntity(req, res) {
           const partOfDetail = await getEntityDetail({ 
             entityId: partOfId, 
             props: 'labels', 
-            language: loggedInUser.displayLanguageCode, 
-            uselang: loggedInUser.languageCode 
+            language: displayLanguageCode, 
+            uselang: languageCode 
           });
 
           partOf.push({
             id: partOfId,
-            value: partOfDetail.entities[partOfId].labels[loggedInUser.displayLanguageCode] 
-              ? partOfDetail.entities[partOfId].labels[loggedInUser.displayLanguageCode].value 
+            value: partOfDetail.entities[partOfId].labels[displayLanguageCode] 
+              ? partOfDetail.entities[partOfId].labels[displayLanguageCode].value 
               : '',
           });
         }
@@ -253,14 +258,14 @@ export async function getEntity(req, res) {
           const taxonNameDetail = await getEntityDetail({ 
             entityId: taxonNameId, 
             props: 'labels', 
-            language: loggedInUser.displayLanguageCode, 
-            uselang: loggedInUser.languageCode 
+            language: displayLanguageCode, 
+            uselang: languageCode 
           });
 
           taxonName.push({
             id: taxonNameId,
-            value: taxonNameDetail.entities[taxonNameId].labels[loggedInUser.displayLanguageCode] 
-              ? taxonNameDetail.entities[taxonNameId].labels[loggedInUser.displayLanguageCode].value 
+            value: taxonNameDetail.entities[taxonNameId].labels[displayLanguageCode] 
+              ? taxonNameDetail.entities[taxonNameId].labels[displayLanguageCode].value 
               : '',
           });
         }
@@ -283,14 +288,14 @@ export async function getEntity(req, res) {
           const hasPartDetail = await getEntityDetail({ 
             entityId: hasPartId, 
             props: 'labels', 
-            language: loggedInUser.displayLanguageCode, 
-            uselang: loggedInUser.languageCode 
+            language: displayLanguageCode, 
+            uselang: languageCode 
           });
 
           hasParts.push({
             id: hasPartId,
-            value: hasPartDetail.entities[hasPartId].labels[loggedInUser.displayLanguageCode] 
-              ? hasPartDetail.entities[hasPartId].labels[loggedInUser.displayLanguageCode].value 
+            value: hasPartDetail.entities[hasPartId].labels[displayLanguageCode] 
+              ? hasPartDetail.entities[hasPartId].labels[displayLanguageCode].value 
               : '',
           });
         }
@@ -322,7 +327,6 @@ export async function getEntity(req, res) {
  */
 export async function getRecommendations(req, res) {
   try {
-    const { loggedInUser } = req;
     const { search, displayLanguageCode, languageCode } = req.query;
     let { limit, page } = req.query;
 
