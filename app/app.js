@@ -1,6 +1,7 @@
 import 'babel-polyfill';
 import Express from 'express';
 import Path from 'path';
+import Fs from 'fs';
 import CookieParser from 'cookie-parser';
 import BodyParser from 'body-parser';
 import Cors from 'cors';
@@ -9,7 +10,6 @@ import Morgan from 'morgan';
 import Config from './configs/env.config';
 import User from './routes/user/v1';
 import SwaggerUi from "swagger-ui-express";
-import SwaggerDocs from "./docs/swagger.json";
 
 const app = Express();
 app.use(BodyParser.json({ limit: '10mb', extended: false }));
@@ -25,8 +25,14 @@ app.use(Morgan('dev'));
 
 app.use('/api/v1', User);
 
+// Load and parse swagger config JSON file
+const swaggerConfig = JSON.parse(Fs.readFileSync(Path.join(__dirname, 'docs', 'swagger.json'), 'utf-8'));
+
+// Update swagger config JSON file with env values
+swaggerConfig.servers[0].url = `${Config.app.host}/api/v1`;
+
 // Server swagger API docs
-app.use("/api/docs", SwaggerUi.serve, SwaggerUi.setup(SwaggerDocs, {
+app.use("/api/docs", SwaggerUi.serve, SwaggerUi.setup(swaggerConfig, {
   customCss: '.swagger-ui .topbar { display: none }'
 }));
 
