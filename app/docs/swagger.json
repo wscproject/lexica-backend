@@ -30,8 +30,8 @@
         "tags": [
           "Activity"
         ],
-        "summary": "Get activities",
-        "description": "Get activities",
+        "summary": "Get available contribution activities",
+        "description": "Get available contribution activities",
         "operationId": "getActivities",
         "parameters": [
           {
@@ -185,8 +185,8 @@
         "tags": [
           "Entity"
         ],
-        "summary": "Get entity recommendation list",
-        "description": "Get entity recommendation list",
+        "summary": "Get Item recommendations for linking",
+        "description": "Get Item recommendations for linking",
         "operationId": "getEntityRecommendationList",
         "parameters": [
           {
@@ -374,8 +374,8 @@
         "tags": [
           "Lexeme Language"
         ],
-        "summary": "Get lexeme languages",
-        "description": "Get lexeme languages",
+        "summary": "Get supported Lexica languages",
+        "description": "Get supported Lexica languages",
         "operationId": "getLexemeLanguages",
         "parameters": [
           {
@@ -510,8 +510,8 @@
         "tags": [
           "Wikidata"
         ],
-        "summary": "Get wikidata languages",
-        "description": "Get wikidata languages",
+        "summary": "Get available Wikidata languages",
+        "description": "Get available Wikidata languages",
         "operationId": "getWikidataLanguages",
         "responses": {
           "200": {
