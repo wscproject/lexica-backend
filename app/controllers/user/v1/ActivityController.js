@@ -33,6 +33,7 @@ export async function getActivities(req, res) {
       limit,     // Number of records per page
       offset,    // Number of records to skip
       order: [[ 'order', 'ASC']], // Sort activities by order field
+      distinct: true,
       include: { 
         attributes: [], // Don't include any attributes from the join table
         model: Language,

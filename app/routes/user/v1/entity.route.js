@@ -6,7 +6,7 @@ import { validateToken, validateUser } from '../../../middlewares/user/v1/common
 const router = express.Router();
 
 router.get('/', validateToken, validateUser, controller.getEntities);
-router.get('/recommendations', validateToken, validateUser, controller.getRecommendations);
+router.get('/recommendations', controller.getRecommendations);
 router.get('/:entityId', validateToken, validateUser, middleware.validateGetEntityDetail, controller.getEntity);
 
 export default router;

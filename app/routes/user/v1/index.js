@@ -10,7 +10,7 @@ import Wikidata from './wikidata.route';
 const router = express.Router();
 router.use('/auth', Auth);
 router.use('/contributions', Contribution);
-router.use('/entites', Entity);
+router.use('/entities', Entity);
 router.use('/languages', Language);
 router.use('/users', User);
 router.use('/activities', Activity);

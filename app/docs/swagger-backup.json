@@ -1,0 +1,179 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Lexica API Docs",
+    "version": "1.0.0",
+    "description": "Lexica API documentation"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Local Server"
+    },
+    {
+      "url": "https://lexica-staging.toolforge.org",
+      "description": "Staging Server (uses staging data)"
+    },
+    {
+      "url": "https://lexica-tool.toolforge.org",
+      "description": "Production Server (uses live data)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User management APIs"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your token in the format 'Bearer <token>'"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": ["id", "externalId", "username"],
+        "properties": {
+          "id": {
+            "type": "uuid",
+            "description": "Unique ID of the user"
+          },
+          "username": {
+            "type": "string",
+            "description": "User's wikidata username"
+          }
+        },
+        "example": {
+          "id": "328dae2d-f44a-4d5d-b746-cc3f9718cb9f",
+          "username": "johndoe"
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/v1/users/profile": {
+      "get": {
+        "summary": "Get user's profile",
+        "tags": ["Users"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single user object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Response's status",
+                      "example": "Success"
+                    },
+                    "statusCode": {
+                      "type": "string",
+                      "description": "Response's status code",
+                      "example": "200"
+                    },
+                    "data": {
+                      "description": "Response's data",
+                      "allOf": [
+                        { "$ref": "#/components/schemas/User" }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/preference": {
+      "put": {
+        "summary": "Update user preference",
+        "tags": ["Users"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "displayLanguageCode": {
+                    "type": "string",
+                    "description": "User's display language"
+                  },
+                  "displayTheme": {
+                    "type": "string",
+                    "description": "User's display theme"
+                  },
+                  "isAlternateFont": {
+                    "type": "boolean",
+                    "description": "Activate/deactivate user's alternate font"
+                  }
+                },
+                "example": {
+                  "displayLanguageCode": "en",
+                  "displayTheme": "default",
+                  "isAlternateFont": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A single user object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "description": "Response's status",
+                      "example": "Success"
+                    },
+                    "statusCode": {
+                      "type": "string",
+                      "description": "Response's status code",
+                      "example": "200"
+                    },
+                    "data": {
+                      "description": "Response's data",
+                      "allOf": [
+                        { "$ref": "#/components/schemas/User" }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data"
+          }
+        }
+      }
+    }
+  }
+}
