@@ -131,6 +131,18 @@ const languageActivities = [
     code: 'tl',
     activities: ['connect']
   },
+  {
+    code: 'sw',
+    activities: ['connect']
+  },
+  {
+    code: 'yo',
+    activities: ['connect']
+  },
+  {
+    code: 'so',
+    activities: ['connect']
+  },
 ];
 
 module.exports = {
