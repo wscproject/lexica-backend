@@ -268,6 +268,33 @@ const languages = [
     created_at: new Date(),
     updated_at: new Date(),
   },
+  {
+    id: uuid(),
+    external_id: 'Q7838',
+    code: 'sw',
+    title: 'Kiswahili',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q34311',
+    code: 'yo',
+    title: 'Yorùbá',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
+  {
+    id: uuid(),
+    external_id: 'Q13275',
+    code: 'so',
+    title: 'Soomaaliga',
+    is_rtl: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+  },
 ];
 
 module.exports = {
