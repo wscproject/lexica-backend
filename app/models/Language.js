@@ -51,11 +51,11 @@ module.exports = (sequelizeConnection) => {
   });
 
   Language.associate = (models) => {
-    Language.belongsToMany(models.Language, {
+    Language.belongsToMany(models.Activity, {
       through: models.LanguageActivity,
-      as: 'activities', // Alias for User
-      foreignKey: 'languageId', // Custom foreign key in the through table
-      otherKey: 'activityId', // Custom other key in the through table
+      as: 'activities',
+      foreignKey: 'languageId',
+      otherKey: 'activityId',
     });
     
     Language.hasOne(models.LanguageVariant, {

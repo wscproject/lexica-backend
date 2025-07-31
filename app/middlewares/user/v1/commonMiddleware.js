@@ -120,3 +120,46 @@ export async function validateUser(req, res, next) {
     return responseError(res, error);
   }
 }
+
+/**
+ * Middleware to validate basic authentication from environment variables
+ * Checks Authorization header against BASIC_AUTH_USERNAME and BASIC_AUTH_PASSWORD from env
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @returns {Object|void} Returns error response if auth fails, otherwise calls next()
+ */
+export async function validateBasicAuth(req, res, next) {
+  try {
+    const { headers: { authorization } } = req;
+
+    // Check if authorization header exists
+    if (!authorization) {
+      return responseError(res, Status.ERROR.TOKEN_REQUIRED);
+    }
+
+    // Check if it's Basic auth format
+    if (!authorization.startsWith('Basic ')) {
+      return responseError(res, Status.ERROR.TOKEN_INVALID);
+    }
+
+    // Extract and decode credentials
+    const base64Credentials = authorization.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
+
+    // Get credentials from environment variables
+    const envUsername = process.env.BASIC_AUTH_USERNAME;
+    const envPassword = process.env.BASIC_AUTH_PASSWORD;
+
+    // Validate credentials
+    if (username !== envUsername || password !== envPassword) {
+      return responseError(res, Status.ERROR.TOKEN_INVALID);
+    }
+
+    // If validation passes, proceed to next middleware
+    next();
+  } catch (error) {
+    return responseError(res, error);
+  }
+}

@@ -74,6 +74,18 @@ module.exports = {
       CODE: 500500,
       MESSAGE: 'Language not found.',
     },
+    LANGUAGE_ALREADY_EXIST: {
+      CODE: 500501,
+      MESSAGE: 'Language already exist.',
+    },
+    LANGUAGE_ACTIVITY_NOT_FOUND: {
+      CODE: 500502,
+      MESSAGE: 'Language activity not found.',
+    },
+    LANGUAGE_ACTIVITY_ALREADY_EXIST: {
+      CODE: 500503,
+      MESSAGE: 'Language activity already exist.',
+    },
 
     // ACTIVITY
     ACTIVITY_NOT_FOUND: {
