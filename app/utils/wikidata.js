@@ -23,7 +23,7 @@ export async function searchEntities({ search = '', language = Constant.DISPLAY_
   return response;
 };
 
-export async function searchRecommendationEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
+export async function searchRecommendationEntities({ search = '', language = Constant.DISPLAY_LANGUAGE.ID.ISO, uselang = Constant.DISPLAY_LANGUAGE.ID.ISO, limit, offset = 0 }) {
   const params = {
       action: 'query',
       format: 'json',
@@ -34,7 +34,7 @@ export async function searchRecommendationEntities({ search = '', language = Con
       prop: 'entityterms|images|cirrusdoc',
       wbetterms: 'alias|label|description',
       wbetlanguage: language,
-      cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}`,
+      cdincludes: `descriptions.${Constant.DISPLAY_LANGUAGE.EN.ISO}|labels.${Constant.DISPLAY_LANGUAGE.EN.ISO}|descriptions.${uselang}|labels.${uselang}`,
       // uselang: language,
       gsrsearch: `${search} -haswbstatement:P31=Q5|P31=Q5633421|P31=Q737498|P31=Q16024164|P31=Q13442814|P31=Q4167410`,
       gsrlimit: limit,
