@@ -129,7 +129,7 @@ export async function getEntity(req, res) {
       aliases: entity?.entities?.[entityId]?.aliases?.[languageCode] 
         ? entity.entities[entityId].aliases[languageCode].map(item => item.value).join(', ') 
         : entity?.entities?.[entityId]?.aliases?.[Constant.DISPLAY_LANGUAGE.EN.ISO] ? 
-        entity.entities[entityId].aliases[languageCode].map(item => item.value).join(', ') : "",
+        entity.entities[entityId].aliases[Constant.DISPLAY_LANGUAGE.EN.ISO].map(item => item.value).join(', ') : "",
       statements: {
         instanceOf: null,
         subclass: null,
