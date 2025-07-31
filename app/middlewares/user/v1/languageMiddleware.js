@@ -28,8 +28,8 @@ export async function validateCreateLanguage(req, res, next) {
       languageVariant: Joi.when('activities', {
         is: Joi.array().has(Joi.string().valid(Constant.ACTIVITY.SCRIPT)),
         then: Joi.object({
-          code: Joi.string().required(),
-          codePreview: Joi.string().min(1).max(100).required(),
+          code: Joi.string().min(1).max(35).required(),
+          codePreview: Joi.string().min(1).max(35).required(),
           title: Joi.string().min(1).max(100).required(),
           isRtl: Joi.boolean().default(false),
         }).required(), // Language variant is required when script activity is present

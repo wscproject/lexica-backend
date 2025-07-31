@@ -120,15 +120,16 @@ export async function getEntity(req, res) {
     // Prepare base response object
     const entityResponse = {
       id: entityId,
-      label: entity.entities[entityId].labels[displayLanguageCode] 
-        ? entity.entities[entityId].labels[displayLanguageCode].value 
-        : '',
-      description: entity.entities[entityId].descriptions[displayLanguageCode] 
-        ? entity.entities[entityId].descriptions[displayLanguageCode].value 
-        : '',
+      label: entity?.entities?.[entityId]?.labels?.[displayLanguageCode]?.value || 
+        entity?.entities?.[entityId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+        '',
+      description: entity?.entities?.[entityId]?.descriptions?.[displayLanguageCode]?.value || 
+        entity?.entities?.[entityId]?.descriptions?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+        '',
       aliases: entity?.entities?.[entityId]?.aliases?.[languageCode] 
         ? entity.entities[entityId].aliases[languageCode].map(item => item.value).join(', ') 
-        : '',
+        : entity?.entities?.[entityId]?.aliases?.[Constant.DISPLAY_LANGUAGE.EN.ISO] ? 
+        entity.entities[entityId].aliases[languageCode].map(item => item.value).join(', ') : "",
       statements: {
         instanceOf: null,
         subclass: null,
@@ -350,8 +351,8 @@ export async function getRecommendations(req, res) {
       for (const recommendation of recommendations.query.pages) {
         recommendationResponse.push({
           id: recommendation.title,
-          label: recommendation?.entityterms?.label?.[0] || '',
-          description: recommendation?.entityterms?.description?.[0] || '',
+          label: recommendation?.entityterms?.label?.[0] || recommendation?.cirrusdoc?.[0]?.source?.descriptions?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] || '',
+          description: recommendation?.entityterms?.description?.[0] || recommendation?.cirrusdoc?.[0]?.source?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] || '',
           image: recommendation?.images?.[0]?.title
             ? `https://commons.wikimedia.org/wiki/Special:FilePath/${recommendation.images[0].title}` 
             : '',
