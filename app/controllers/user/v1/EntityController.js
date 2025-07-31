@@ -360,7 +360,15 @@ export async function getRecommendations(req, res) {
       }
     }
 
-    return responseSuccess(res, recommendationResponse);
+    const response = {
+      entities: recommendationResponse,
+      metadata: {
+        limit,
+        currentPage: page,
+      },
+    };
+
+    return responseSuccess(res, response);
   } catch (err) {
     return responseError(res, err);
   }
