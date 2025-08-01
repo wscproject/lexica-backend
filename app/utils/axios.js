@@ -22,6 +22,7 @@ const agent = new https.Agent({
 export async function Get({
   url, params, headers, req, target, transaction, role,
 }) {
+  console.log(url + queryParser(params));
   return new Promise((resolve, reject) => {
     axios.request({
       url: url + queryParser(params),

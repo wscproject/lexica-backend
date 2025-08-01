@@ -8,6 +8,8 @@ const prodExt = {
     port: Number(process.env.APP_PORT),
     isStaging: process.env.IS_STAGING,
     baseImageUrl: process.env.BASE_IMAGE_URL,
+    basicAuthUsername: process.env.BASIC_AUTH_USERNAME,
+    basicAuthPassword: process.env.BASIC_AUTH_PASSWORD,
   },
   jwt: {
     jwtSecret: process.env.JWT_SECRET,
@@ -48,6 +50,8 @@ const production = {
     port: Number(process.env.APP_PORT),
     isStaging: process.env.IS_STAGING,
     baseImageUrl: process.env.BASE_IMAGE_URL,
+    basicAuthUsername: process.env.BASIC_AUTH_USERNAME,
+    basicAuthPassword: process.env.BASIC_AUTH_PASSWORD,
   },
   jwt: {
     jwtSecret: process.env.JWT_SECRET,

@@ -120,15 +120,18 @@ export async function getEntity(req, res) {
     // Prepare base response object
     const entityResponse = {
       id: entityId,
-      label: entity.entities[entityId].labels[displayLanguageCode] 
-        ? entity.entities[entityId].labels[displayLanguageCode].value 
-        : '',
-      description: entity.entities[entityId].descriptions[displayLanguageCode] 
-        ? entity.entities[entityId].descriptions[displayLanguageCode].value 
-        : '',
+      label: entity?.entities?.[entityId]?.labels?.[languageCode]?.value || 
+        entity?.entities?.[entityId]?.labels?.[displayLanguageCode]?.value ||
+        entity?.entities?.[entityId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+        '',
+      description: entity?.entities?.[entityId]?.descriptions?.[languageCode]?.value || 
+        entity?.entities?.[entityId]?.descriptions?.[displayLanguageCode]?.value || 
+        entity?.entities?.[entityId]?.descriptions?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+        '',
       aliases: entity?.entities?.[entityId]?.aliases?.[languageCode] 
         ? entity.entities[entityId].aliases[languageCode].map(item => item.value).join(', ') 
-        : '',
+        : entity?.entities?.[entityId]?.aliases?.[Constant.DISPLAY_LANGUAGE.EN.ISO] ? 
+        entity.entities[entityId].aliases[Constant.DISPLAY_LANGUAGE.EN.ISO].map(item => item.value).join(', ') : "",
       statements: {
         instanceOf: null,
         subclass: null,
@@ -174,9 +177,10 @@ export async function getEntity(req, res) {
 
           instanceOf.push({
             id: instanceOfId,
-            value: instanceOfDetail.entities[instanceOfId].labels[displayLanguageCode] 
-              ? instanceOfDetail.entities[instanceOfId].labels[displayLanguageCode].value 
-              : '',
+            value: instanceOfDetail?.entities?.[instanceOfId]?.labels?.[languageCode]?.value ||
+              instanceOfDetail?.entities?.[instanceOfId]?.labels?.[displayLanguageCode]?.value ||
+              instanceOfDetail?.entities?.[instanceOfId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+              ''
           });
         }
       }
@@ -204,9 +208,10 @@ export async function getEntity(req, res) {
 
           subclass.push({
             id: subclassId,
-            value: subclassDetail.entities[subclassId].labels[displayLanguageCode] 
-              ? subclassDetail.entities[subclassId].labels[displayLanguageCode].value 
-              : '',
+            value: subclassDetail?.entities?.[subclassId]?.labels?.[languageCode]?.value ||
+              subclassDetail?.entities?.[subclassId]?.labels?.[displayLanguageCode]?.value ||
+              subclassDetail?.entities?.[subclassId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+              '',
           });
         }
       }
@@ -234,9 +239,10 @@ export async function getEntity(req, res) {
 
           partOf.push({
             id: partOfId,
-            value: partOfDetail.entities[partOfId].labels[displayLanguageCode] 
-              ? partOfDetail.entities[partOfId].labels[displayLanguageCode].value 
-              : '',
+            value: partOfDetail?.entities?.[partOfId]?.labels?.[languageCode]?.value ||
+              partOfDetail?.entities?.[partOfId]?.labels?.[displayLanguageCode]?.value ||
+              partOfDetail?.entities?.[partOfId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+              '',
           });
         }
       }
@@ -264,9 +270,10 @@ export async function getEntity(req, res) {
 
           taxonName.push({
             id: taxonNameId,
-            value: taxonNameDetail.entities[taxonNameId].labels[displayLanguageCode] 
-              ? taxonNameDetail.entities[taxonNameId].labels[displayLanguageCode].value 
-              : '',
+            value: taxonNameDetail?.entities?.[taxonNameId]?.labels?.[languageCode]?.value ||
+              taxonNameDetail?.entities?.[taxonNameId]?.labels?.[displayLanguageCode]?.value ||
+              taxonNameDetail?.entities?.[taxonNameId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+              '',
           });
         }
       }
@@ -294,9 +301,10 @@ export async function getEntity(req, res) {
 
           hasParts.push({
             id: hasPartId,
-            value: hasPartDetail.entities[hasPartId].labels[displayLanguageCode] 
-              ? hasPartDetail.entities[hasPartId].labels[displayLanguageCode].value 
-              : '',
+            value: hasPartDetail?.entities?.[hasPartId]?.labels?.[languageCode]?.value ||
+              hasPartDetail?.entities?.[hasPartId]?.labels?.[displayLanguageCode]?.value ||
+              hasPartDetail?.entities?.[hasPartId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
+              '',
           });
         }
       }
@@ -340,8 +348,8 @@ export async function getRecommendations(req, res) {
       search,
       limit,
       offset,
-      language: displayLanguageCode || Constant.DISPLAY_LANGUAGE.EN.ISO, 
-      uselang: languageCode || Constant.DISPLAY_LANGUAGE.EN.ISO
+      language: languageCode || Constant.DISPLAY_LANGUAGE.EN.ISO,
+      uselang: displayLanguageCode || Constant.DISPLAY_LANGUAGE.EN.ISO,
     });
 
     // Format recommendations for response
@@ -350,8 +358,8 @@ export async function getRecommendations(req, res) {
       for (const recommendation of recommendations.query.pages) {
         recommendationResponse.push({
           id: recommendation.title,
-          label: recommendation?.entityterms?.label?.[0] || '',
-          description: recommendation?.entityterms?.description?.[0] || '',
+          label: recommendation?.entityterms?.label?.[0] || recommendation?.cirrusdoc?.[0]?.source?.descriptions?.[displayLanguageCode]?.[0] || recommendation?.cirrusdoc?.[0]?.source?.descriptions?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] || '',
+          description: recommendation?.entityterms?.description?.[0] || recommendation?.cirrusdoc?.[0]?.source?.labels?.[displayLanguageCode]?.[0] || recommendation?.cirrusdoc?.[0]?.source?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.[0] || '',
           image: recommendation?.images?.[0]?.title
             ? `https://commons.wikimedia.org/wiki/Special:FilePath/${recommendation.images[0].title}` 
             : '',
@@ -360,7 +368,15 @@ export async function getRecommendations(req, res) {
       }
     }
 
-    return responseSuccess(res, recommendationResponse);
+    const response = {
+      entities: recommendationResponse,
+      metadata: {
+        limit,
+        currentPage: page,
+      },
+    };
+
+    return responseSuccess(res, response);
   } catch (err) {
     return responseError(res, err);
   }
