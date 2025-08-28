@@ -1879,9 +1879,9 @@ export async function getContributionHyphenationDetail(req, res) {
       for (const gramaticalFeatureId of form.grammaticalFeatures) {
         const grammaticalFeature = await getEntityDetail({ entityId: gramaticalFeatureId, language: '', uselang: '' });
         grammaticalFeatures.push(
-          grammaticalFeature?.entities?.[gramaticalFeatureId]?.labels?.[loggedInUser.languageCode].value ||
-          grammaticalFeature?.entities?.[gramaticalFeatureId]?.labels?.[loggedInUser.displayLanguageCode].value ||
-          grammaticalFeature?.entities?.[gramaticalFeatureId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO].value ||
+          grammaticalFeature?.entities?.[gramaticalFeatureId]?.labels?.[loggedInUser.languageCode]?.value ||
+          grammaticalFeature?.entities?.[gramaticalFeatureId]?.labels?.[loggedInUser.displayLanguageCode]?.value ||
+          grammaticalFeature?.entities?.[gramaticalFeatureId]?.labels?.[Constant.DISPLAY_LANGUAGE.EN.ISO]?.value ||
           ''
         );
       }
