@@ -1758,18 +1758,16 @@ export async function getContributionHyphenationDetail(req, res) {
         gloss.push(sense.glosses[loggedInUser.languageCode].value);
       }
 
-      if (sense.glosses[Constant.DISPLAY_LANGUAGE.EN.ISO]) {
-        statements.otherGlosses.push({
-          language: sense.glosses[Constant.DISPLAY_LANGUAGE.EN.ISO].language,
-          value: sense.glosses[Constant.DISPLAY_LANGUAGE.EN.ISO].value
-        });
-      }
-
-      if (sense.glosses[Constant.DISPLAY_LANGUAGE.ID.ISO]) {
-        statements.otherGlosses.push({
-          language: sense.glosses[Constant.DISPLAY_LANGUAGE.ID.ISO].language,
-          value: sense.glosses[Constant.DISPLAY_LANGUAGE.ID.ISO].value
-        });
+      // Get all other glosses except the user's language
+      if (sense.glosses) {
+        for (const [key, value] of Object.entries(sense.glosses)) {
+          if (key !== loggedInUser.languageCode) {
+            statements.otherGlosses.push({
+              language: value.language,
+              value: value.value
+            });
+          }
+        }
       }
 
       // get images
