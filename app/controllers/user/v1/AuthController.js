@@ -68,7 +68,7 @@ export async function login(req, res) {
     }
 
     // Step 2: Fetch user profile from Wikimedia using obtained access token
-    const getProfileUrl = `${Config.wiki.wikidataUrl}/w/api.php`;
+    const getProfileUrl = `${Config.wiki.wikimetaUrl}/w/api.php`;
     const getProfileQueryParams = {
       action: 'query',
       meta: 'userinfo',
