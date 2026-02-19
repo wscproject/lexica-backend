@@ -43,7 +43,7 @@ export async function login(req, res) {
 
     // Step 1: Exchange authorization code for access token
     // Construct URL and body for Wikimedia OAuth token endpoint
-    const getAccessTokenUrl = `${Config.wiki.wikidataUrl}/w/rest.php/oauth2/access_token`;
+    const getAccessTokenUrl = `${Config.wiki.wikimetaUrl}/w/rest.php/oauth2/access_token`;
     const getAccessTokenBody = new URLSearchParams({
       grant_type: 'authorization_code',
       code,
