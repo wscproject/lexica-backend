@@ -60,8 +60,6 @@ export async function login(req, res) {
       },
     });
 
-    console.log('access token response:', JSON.stringify(getAccessTokenResponse));
-
     // Validate token response
     if (getAccessTokenResponse.error) {
       throw Status.ERROR.TOKEN_INVALID;
