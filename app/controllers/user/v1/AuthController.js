@@ -129,7 +129,7 @@ export async function login(req, res) {
 
     // Step 5: Generate JWT token for session management
     const token = Jwt.sign({ user: { id: user.id, username: user.username } }, Config.jwt.jwtSecret, {
-      expiresIn: Config.jwt.jwtExpirationInSeconds,
+      expiresIn: Config.jwt.jwtExpiresIn,
     });
 
     // Store JWT token in user record

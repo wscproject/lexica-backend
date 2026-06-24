@@ -13,7 +13,7 @@ const prodExt = {
   },
   jwt: {
     jwtSecret: process.env.JWT_SECRET,
-    jwtExpirationInSeconds: Number(process.env.JWT_EXPIRY),
+    jwtExpiresIn: process.env.JWT_EXPIRY,
   },
   activity: {
     totalConnectLexemeSense: process.env.TOTAL_CONNECT_LEXEME_SENSE,
@@ -55,7 +55,7 @@ const production = {
   },
   jwt: {
     jwtSecret: process.env.JWT_SECRET,
-    jwtExpirationInSeconds: Number(process.env.JWT_EXPIRY),
+    jwtExpiresIn: process.env.JWT_EXPIRY,
   },
   activity: {
     totalConnectLexemeSense: process.env.TOTAL_CONNECT_LEXEME_SENSE,
